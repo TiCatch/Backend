@@ -46,7 +46,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.KEY }}
         script: |
-          sudo docker rm -f $(docker ps -qa)
-          sudo docker pull ${{ secrets.DOCKER_REPO }}/directors-dev
-          docker-compose up -d
-          docker image prune -f
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}
+          sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
+          sudo docker run --name github-actions-demo --rm -d -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}
+          sudo docker system prune -f
