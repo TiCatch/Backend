@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.history.entity;
 
-import TiCatch.backend.domain.member.entity.Member;
+import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "history")
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "history")
 public class History extends BaseTimeEntity {
 
     //예매 기록 ID
@@ -19,10 +19,10 @@ public class History extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long historyId;
 
-    //멤버
+    //사용자
     @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     //예매 좌석정보
     private String historyInfo;
