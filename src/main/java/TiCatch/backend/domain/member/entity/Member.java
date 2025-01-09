@@ -22,7 +22,7 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false, length = 30)
     private String memberNickname;
 
-    //총 s점수
+    //총 점수
     @Column(nullable = false)
     private String memberScore;
 
