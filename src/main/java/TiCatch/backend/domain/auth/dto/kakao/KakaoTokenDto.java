@@ -1,14 +1,51 @@
 package TiCatch.backend.domain.auth.dto.kakao;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-@Data
+@Getter
+@NoArgsConstructor
 public class KakaoTokenDto {
-    private String token_type; //토큰 타입, bearer로 고정
-    private String access_token; //갱신된 사용자 액세스 토큰 값
-    private String id_token; //갱신된 ID 토큰 값
-    private int expires_in; //갱신된 ID 토큰 값
-    private String refresh_token;//갱신된 사용자 리프레시 토큰 값
-    private int refresh_token_expires_in; //리프레시 토큰 만료 시간(초)
-    private String scope; //인증된 사용자의 정보 조회 권한 범위
+
+    @JsonProperty("token_type") // bearer로 고정
+    private String tokenType;
+
+    @JsonProperty("access_token")
+    private String accessToken;
+
+    @JsonProperty("id_token")
+    private String idToken;
+
+    @JsonProperty("expires_in")
+    private int expiresIn;
+
+    @JsonProperty("refresh_token")
+    private String refreshToken;
+
+    @JsonProperty("refresh_token_expires_in")
+    private int refreshTokenExpiresIn;
+
+    @JsonProperty("scope")
+    private String scope;
+
+    // 전체 생성자 추가 (Jackson이 이 생성자를 사용해 역직렬화)
+    @JsonCreator
+    public KakaoTokenDto(
+            @JsonProperty("token_type") String tokenType,
+            @JsonProperty("access_token") String accessToken,
+            @JsonProperty("id_token") String idToken,
+            @JsonProperty("expires_in") int expiresIn,
+            @JsonProperty("refresh_token") String refreshToken,
+            @JsonProperty("refresh_token_expires_in") int refreshTokenExpiresIn,
+            @JsonProperty("scope") String scope
+    ) {
+        this.tokenType = tokenType;
+        this.accessToken = accessToken;
+        this.idToken = idToken;
+        this.expiresIn = expiresIn;
+        this.refreshToken = refreshToken;
+        this.refreshTokenExpiresIn = refreshTokenExpiresIn;
+        this.scope = scope;
+    }
 }
