@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.ticketing.entity;
 
-import TiCatch.backend.domain.member.entity.Member;
+import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,9 +11,9 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-@Table(name = "ticketing")
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "ticketing")
 public class Ticketing extends BaseTimeEntity {
 
     //티켓팅 ID
@@ -21,10 +21,10 @@ public class Ticketing extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ticketingId;
 
-    //멤버
+    //사용자
     @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     //티켓팅 레벨
     @Column(nullable = false, length = 20)
