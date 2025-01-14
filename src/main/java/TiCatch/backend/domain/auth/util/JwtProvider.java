@@ -34,7 +34,7 @@ public class JwtProvider {
     private String BEARER_TYPE;
     @Value("${jwt.bearer.prefix}")
     private String BEARER_PREFIX;
-    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 30L; // 30분
+    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 2L; // 2시간
     private final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 24L * 7L; //7일
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
