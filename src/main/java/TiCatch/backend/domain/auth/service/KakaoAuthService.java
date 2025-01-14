@@ -34,6 +34,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class KakaoAuthService {
 
 	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -96,8 +97,7 @@ public class KakaoAuthService {
 			.build();
 	}
 
-	@Transactional
-	public KakaoTokenDto getKakaoAccessToken(String code) {
+	private KakaoTokenDto getKakaoAccessToken(String code) {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -124,21 +124,27 @@ public class KakaoAuthService {
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		KakaoTokenDto kakaoTokenDto = null;
 
+//		try {
+//			kakaoTokenDto = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
+//		} catch (JsonProcessingException e) {
+//			log.error(e.toString());
+//		}
 		try {
-			kakaoTokenDto = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
+			// 변경된 부분: setter 대신 전체 생성자를 활용한 매핑
+			return objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
 		} catch (JsonProcessingException e) {
-			log.error(e.toString());
+			log.error("Error parsing KakaoTokenDto: {}", e.getMessage());
+			throw new RuntimeException("Kakao token parsing failed", e); // 예외 처리 강화
 		}
 
-		return kakaoTokenDto;
+//		return kakaoTokenDto;
 	}
 
-	@Transactional
-	public User getKakaoUserInfo(KakaoTokenDto kakaoTokenDto) {
+	private User getKakaoUserInfo(KakaoTokenDto kakaoTokenDto) {
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", "Bearer " + kakaoTokenDto.getAccess_token());
+		headers.add("Authorization", "Bearer " + kakaoTokenDto.getAccessToken());
 
 		HttpEntity<MultiValueMap<String, String>> accountInfoRequest = new HttpEntity<>(headers);
 
