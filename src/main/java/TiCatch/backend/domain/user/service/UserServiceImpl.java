@@ -17,7 +17,7 @@ import TiCatch.backend.global.exception.NotExistUserException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
