@@ -34,4 +34,13 @@ public class User extends BaseTimeEntity {
     @JoinColumn(name = "credential_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Credential credential;
 
+    public UserResponseDto toUserResponseDto() {
+        return UserResponseDto.builder()
+                .userId(userId)
+                .userNickname(userNickname)
+                .userScore(userScore)
+                .credentialId(credential.getCredentialId())
+                .userEmail(credential.getEmail())
+                .build();
+    }
 }
