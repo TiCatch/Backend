@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -27,14 +27,14 @@ public class Ticketing extends BaseTimeEntity {
     private User user;
 
     //티켓팅 레벨
-    @Column(nullable = false, length = 20)
-    private int ticketingLevel;
+    @Enumerated
+    private TicketingLevel ticketingLevel;
 
     //티켓팅 시간
     @Column(nullable = false)
-    private LocalDate ticketingTime;
+    private LocalDateTime ticketingTime;
 
     //티켓팅 상태
-    @Column(nullable = false, length = 20)
-    private String ticketingState;
+    @Enumerated
+    private TicketingStatus ticketingStatus;
 }
