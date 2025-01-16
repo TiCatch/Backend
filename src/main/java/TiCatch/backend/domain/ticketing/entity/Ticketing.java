@@ -27,7 +27,7 @@ public class Ticketing extends BaseTimeEntity {
     private User user;
 
     //티켓팅 레벨
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private TicketingLevel ticketingLevel;
 
     //티켓팅 시간
@@ -35,7 +35,7 @@ public class Ticketing extends BaseTimeEntity {
     private LocalDateTime ticketingTime;
 
     //티켓팅 상태
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private TicketingStatus ticketingStatus;
 
     @Builder
