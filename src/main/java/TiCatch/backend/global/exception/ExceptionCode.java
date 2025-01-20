@@ -11,7 +11,11 @@ public enum ExceptionCode {
 	UNAUTHORIZED_ACCESS_EXCEPTION(432,"접근 권한이 없습니다."),
 	WRONG_TOKEN_EXCEPTION(433,"잘못된 토큰입니다."),
 	NOT_EXIST_USER_EXCEPTION(450,"사용자가 존재하지 않습니다."),
-	SERVER_EXCEPTION(500, "서버에서 예측하지 못한 에러가 발생했습니다.");
+	SERVER_EXCEPTION(500, "서버에서 예측하지 못한 에러가 발생했습니다."),
+
+	// TICKETING
+	UNAUTHORIZED_TICKET_ACCESS_EXCEPTION(440, "티켓팅에 접근할 권한이 없습니다.");
+
 
 	private final int errorCode;
 	private final String errorMessage;
