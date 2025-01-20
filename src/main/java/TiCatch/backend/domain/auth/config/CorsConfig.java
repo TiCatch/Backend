@@ -16,6 +16,8 @@ public class CorsConfig {
     @Value("${cors.allowed-origin.ec2}")
     private String ec2Origin;
 
+    @Value("${cors.allowed-origin.vercel}")
+    private String vercelOrigin;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -24,6 +26,7 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         config.addAllowedOrigin(localOrigin);
         config.addAllowedOrigin(ec2Origin);
+        config.addAllowedOrigin(vercelOrigin);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.addExposedHeader("Authorization");
