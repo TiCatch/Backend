@@ -9,10 +9,7 @@ import TiCatch.backend.global.response.SingleResponseResult;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,5 +23,11 @@ public class TicketingController {
     public ResponseEntity<SingleResponseResult<TicketingResponseDto>> createTicket(HttpServletRequest request, @RequestBody CreateTicketingDto createTicketingDto) {
         User user = userService.getUserFromRequest(request);
         return ResponseEntity.ok().body(new SingleResponseResult<>(ticketingService.createTicket(createTicketingDto, user)));
+    }
+
+    @GetMapping("/{ticketingId}")
+    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getTicket(HttpServletRequest request, @PathVariable Long ticketingId) {
+        User user = userService.getUserFromRequest(request);
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicket(ticketingId, user)));
     }
 }
