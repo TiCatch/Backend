@@ -14,7 +14,8 @@ public enum ExceptionCode {
 	SERVER_EXCEPTION(500, "서버에서 예측하지 못한 에러가 발생했습니다."),
 
 	// TICKETING
-	UNAUTHORIZED_TICKET_ACCESS_EXCEPTION(440, "티켓팅에 접근할 권한이 없습니다.");
+	UNAUTHORIZED_TICKET_ACCESS_EXCEPTION(440, "티켓팅에 접근할 권한이 없습니다."),
+	NOT_EXIST_TICKET_EXCEPTION(441, "티켓팅이 존재하지 않습니다.");
 
 
 	private final int errorCode;

@@ -58,4 +58,11 @@ public class ExceptionController {
         log.info("Error Message : {}", err.getMessage());
         return ResponseResult.exceptionResponse(ExceptionCode.UNAUTHORIZED_TICKET_ACCESS_EXCEPTION, err.getMessage());
     }
+
+    @ExceptionHandler(NotExistTicketException.class)
+    public ResponseResult NotExistTicketException(NotExistTicketException err) {
+        log.info("Error : {}", err.getClass());
+        log.info("Error Message : {}", err.getMessage());
+        return ResponseResult.exceptionResponse(ExceptionCode.NOT_EXIST_TICKET_EXCEPTION, err.getMessage());
+    }
 }
