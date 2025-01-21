@@ -6,6 +6,7 @@ import TiCatch.backend.domain.ticketing.entity.TicketingLevel;
 import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.domain.user.repository.UserRepository;
+import TiCatch.backend.global.exception.NotExistTicketException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 public class TicketingServiceTest {
@@ -76,5 +78,17 @@ public class TicketingServiceTest {
         assertThat(targetTicket.getTicketingStatus()).isEqualTo(TicketingStatus.WAITING);
         assertThat(targetTicket.getTicketingLevel()).isEqualTo(TicketingLevel.EASY);
         assertThat(targetTicket.getTicketingTime()).isEqualTo(ticketingTime);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 티켓팅은 조회할 수 없다.")
+    void notExistTicketExceptionTest() {
+        // given
+        Long notExistentTicketingId = 999L; // 존재하지 않는 임의의 번호
+
+        // when & then
+        assertThatThrownBy(() -> ticketingService.getTicket(notExistentTicketingId, testUser))
+                .isInstanceOf(NotExistTicketException.class)
+                .hasMessage("티켓팅이 존재하지 않습니다.");
     }
 }
