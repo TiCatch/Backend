@@ -56,4 +56,25 @@ public class TicketingServiceTest {
         assertThat(newTicket.getTicketingLevel()).isEqualTo(TicketingLevel.EASY);
         assertThat(newTicket.getTicketingTime()).isEqualTo(ticketingTime);
     }
+
+    @Test
+    @DisplayName("티켓팅을 조회한다.")
+    void getTicket() {
+        // given
+        LocalDateTime ticketingTime = LocalDateTime.now();
+        CreateTicketingDto createTicketingDto = CreateTicketingDto.builder()
+                .ticketingLevel(TicketingLevel.EASY)
+                .ticketingTime(ticketingTime)
+                .build();
+        TicketingResponseDto newTicket = ticketingService.createTicket(createTicketingDto, testUser);
+
+        // when
+        TicketingResponseDto targetTicket = ticketingService.getTicket(newTicket.getTicketingId(), testUser);
+
+        // then
+        assertThat(targetTicket.getTicketingId()).isNotNull();
+        assertThat(targetTicket.getTicketingStatus()).isEqualTo(TicketingStatus.WAITING);
+        assertThat(targetTicket.getTicketingLevel()).isEqualTo(TicketingLevel.EASY);
+        assertThat(targetTicket.getTicketingTime()).isEqualTo(ticketingTime);
+    }
 }
