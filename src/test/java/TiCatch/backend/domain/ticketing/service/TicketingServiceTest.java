@@ -7,6 +7,7 @@ import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.domain.user.repository.UserRepository;
 import TiCatch.backend.global.exception.NotExistTicketException;
+import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -90,5 +91,29 @@ public class TicketingServiceTest {
         assertThatThrownBy(() -> ticketingService.getTicket(notExistentTicketingId, testUser))
                 .isInstanceOf(NotExistTicketException.class)
                 .hasMessage("티켓팅이 존재하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("본인이 생성하지 않은 티켓팅에는 접근할 수 없습니다.")
+    void unAuthorizedTicketAccessExceptionTest() {
+        // given
+        LocalDateTime ticketingTime = LocalDateTime.now();
+        CreateTicketingDto createTicketingDto = CreateTicketingDto.builder()
+                .ticketingLevel(TicketingLevel.EASY)
+                .ticketingTime(ticketingTime)
+                .build();
+        TicketingResponseDto newTicket = ticketingService.createTicket(createTicketingDto, testUser);
+
+        User unAuthorizedUser = User.builder()
+                .userId(999L)
+                .userNickname("이기태2")
+                .userScore(0)
+                .build();
+        userRepository.save(testUser);
+
+        // when & then
+        assertThatThrownBy(() -> ticketingService.getTicket(newTicket.getTicketingId(), unAuthorizedUser))
+                .isInstanceOf(UnAuthorizedTicketAccessException.class)
+                .hasMessage("티켓팅에 접근할 권한이 없습니다.");
     }
 }
