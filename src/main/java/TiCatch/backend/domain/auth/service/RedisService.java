@@ -20,14 +20,13 @@ public class RedisService {
 		redisTemplate.expire(key, 14, TimeUnit.DAYS);
 	}
 
-	public Long addToWaitingQueue(Long ticketId, String userId) {
+	public void addToWaitingQueue(Long ticketId, String userId) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
 		double score = System.currentTimeMillis();
 		redisTemplate.opsForZSet().add(queueKey, userId, score);
-		return getWaitingQueueRank(ticketId, userId);
 	}
 
-	private Long getWaitingQueueRank(Long ticketId, String userId) {
+	public Long getWaitingQueueRank(Long ticketId, String userId) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
 		Long rank = redisTemplate.opsForZSet().rank(queueKey, userId);
 		if(rank == null) {

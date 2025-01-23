@@ -43,8 +43,12 @@ public class TicketingService {
         Long responseUserId = assignUserIdWithVirtualUser(userId);
         Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
         validateTicketing(ticketing, responseUserId);   // 티켓팅 유효성 검증 (1. 티켓팅 주인 / 2. 티켓팅 상태)
-        Long rank = redisService.addToWaitingQueue(ticketingId, userId);
-        return TicketingWaitingResponseDto.of(ticketingId, responseUserId, rank);
+        redisService.addToWaitingQueue(ticketingId, userId);
+        return TicketingWaitingResponseDto.of(ticketingId, responseUserId, redisService.getWaitingQueueRank(ticketingId, userId));
+    }
+
+    public TicketingWaitingResponseDto getTicketingWaitingStatus(Long ticketingId, Long userId) {
+        return TicketingWaitingResponseDto.of(ticketingId, userId, redisService.getWaitingQueueRank(ticketingId, userId.toString()));
     }
 
     private Long assignUserIdWithVirtualUser(String userId) {
