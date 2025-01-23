@@ -3,8 +3,10 @@ package TiCatch.backend.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -26,6 +28,11 @@ public class RedisService {
 		redisTemplate.opsForZSet().add(queueKey, userId, score);
 	}
 
+	public void deleteWaitingQueue(Long ticketId) {
+		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
+		redisTemplate.delete(queueKey);
+	}
+
 	public Long getWaitingQueueRank(Long ticketId, String userId) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
 		Long rank = redisTemplate.opsForZSet().rank(queueKey, userId);
@@ -33,5 +40,15 @@ public class RedisService {
 			return -1L;
 		}
 		return rank+1;
+	}
+
+	public Set<ZSetOperations.TypedTuple<String>> getBatchFromQueue(Long ticketId, int batchSize) {
+		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
+		return redisTemplate.opsForZSet().rangeWithScores(queueKey, 0, batchSize - 1);
+	}
+
+	public void removeBatchFromQueue(Long ticketId, int batchSize) {
+		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
+		redisTemplate.opsForZSet().removeRange(queueKey, 0, batchSize - 1);
 	}
 }

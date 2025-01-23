@@ -8,21 +8,26 @@ import TiCatch.backend.domain.ticketing.entity.Ticketing;
 import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.ticketing.repository.TicketingRepository;
 import TiCatch.backend.domain.user.entity.User;
+import TiCatch.backend.global.config.DynamicScheduler;
 import TiCatch.backend.global.exception.NotExistTicketException;
 import TiCatch.backend.global.exception.NotInProgressTicketException;
 import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TicketingService {
 
     private final RedisService redisService;
     private final TicketingRepository ticketingRepository;
+    private final DynamicScheduler dynamicScheduler;
 
     @Transactional
     public TicketingResponseDto createTicket(CreateTicketingDto createTicketingDto, User user) {
@@ -42,13 +47,19 @@ public class TicketingService {
     public TicketingWaitingResponseDto addTicketingWaitingQueue(Long ticketingId, String userId) {
         Long responseUserId = assignUserIdWithVirtualUser(userId);
         Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
-        validateTicketing(ticketing, responseUserId);   // 티켓팅 유효성 검증 (1. 티켓팅 주인 / 2. 티켓팅 상태)
+        validateTicketing(ticketing, responseUserId);
         redisService.addToWaitingQueue(ticketingId, userId);
+        dynamicScheduler.startScheduler(ticketingId, 3);
         return TicketingWaitingResponseDto.of(ticketingId, responseUserId, redisService.getWaitingQueueRank(ticketingId, userId));
     }
 
     public TicketingWaitingResponseDto getTicketingWaitingStatus(Long ticketingId, Long userId) {
-        return TicketingWaitingResponseDto.of(ticketingId, userId, redisService.getWaitingQueueRank(ticketingId, userId.toString()));
+        Long rank = redisService.getWaitingQueueRank(ticketingId, userId.toString());
+        if(rank == -1L) {
+            dynamicScheduler.stopScheduler(ticketingId);
+            redisService.deleteWaitingQueue(ticketingId);
+        }
+        return TicketingWaitingResponseDto.of(ticketingId, userId, rank);
     }
 
     private Long assignUserIdWithVirtualUser(String userId) {
