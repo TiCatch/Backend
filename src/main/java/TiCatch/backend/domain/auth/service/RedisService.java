@@ -13,10 +13,26 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
 
 	private final RedisTemplate<String, String> redisTemplate;
+	private final String WAITING_QUEUE_PREFIX = "queue:ticket:";
 
 	public void setValues(String key, String value) {
 		redisTemplate.opsForValue().set(key, value);
 		redisTemplate.expire(key, 14, TimeUnit.DAYS);
 	}
 
+	public Long addToWaitingQueue(Long ticketId, String userId) {
+		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
+		double score = System.currentTimeMillis();
+		redisTemplate.opsForZSet().add(queueKey, userId, score);
+		return getWaitingQueueRank(ticketId, userId);
+	}
+
+	private Long getWaitingQueueRank(Long ticketId, String userId) {
+		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
+		Long rank = redisTemplate.opsForZSet().rank(queueKey, userId);
+		if(rank == null) {
+			return -1L;
+		}
+		return rank+1;
+	}
 }
