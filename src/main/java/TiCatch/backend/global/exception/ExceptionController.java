@@ -65,4 +65,11 @@ public class ExceptionController {
         log.info("Error Message : {}", err.getMessage());
         return ResponseResult.exceptionResponse(ExceptionCode.NOT_EXIST_TICKET_EXCEPTION, err.getMessage());
     }
+
+    @ExceptionHandler(NotInProgressTicketException.class)
+    public ResponseResult NotInProgressTicketException(NotInProgressTicketException err) {
+        log.info("Error : {}", err.getClass());
+        log.info("Error Message : {}", err.getMessage());
+        return ResponseResult.exceptionResponse(ExceptionCode.NOT_IN_PROGRESS_TICKET_EXCEPTION, err.getMessage());
+    }
 }
