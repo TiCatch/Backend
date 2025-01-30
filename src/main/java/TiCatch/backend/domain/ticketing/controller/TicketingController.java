@@ -2,14 +2,18 @@ package TiCatch.backend.domain.ticketing.controller;
 
 import TiCatch.backend.domain.ticketing.dto.request.CreateTicketingDto;
 import TiCatch.backend.domain.ticketing.dto.response.TicketingResponseDto;
+import TiCatch.backend.domain.ticketing.dto.response.TicketingWaitingResponseDto;
 import TiCatch.backend.domain.ticketing.service.TicketingService;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.domain.user.service.UserService;
 import TiCatch.backend.global.response.SingleResponseResult;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,8 +30,25 @@ public class TicketingController {
     }
 
     @GetMapping("/{ticketingId}")
-    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getTicket(HttpServletRequest request, @PathVariable Long ticketingId) {
+    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getTicket(HttpServletRequest request, @PathVariable("ticketingId") Long ticketingId) {
         User user = userService.getUserFromRequest(request);
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicket(ticketingId, user)));
+    }
+
+    @GetMapping("/waiting/{ticketingId}/{userType}")
+    public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> startTicketing(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId, @Parameter(description = "유저 유형 (ACTUAL 또는 VIRTUAL)") @PathVariable("userType") String userType) {
+        String userId;
+        if (userType.equals("ACTUAL")) {
+            userId = userService.getUserFromRequest(request).getUserId().toString();
+        } else {
+            userId = "VIRTUAL:" + UUID.randomUUID().toString();
+        }
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.addTicketingWaitingQueue(ticketingId, userId)));
+    }
+
+    @GetMapping("/waiting-status/{ticketingId}")
+    public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> getTicketingWaitingStatus(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId) {
+        User user = userService.getUserFromRequest(request);
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicketingWaitingStatus(ticketingId, user.getUserId())));
     }
 }
