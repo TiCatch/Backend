@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -52,5 +53,13 @@ public class TicketingController {
     public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> getTicketingWaitingStatus(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId) {
         User user = userService.getUserFromRequest(request);
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicketingWaitingStatus(ticketingId, user.getUserId())));
+    }
+
+    // 전체 좌석 예약 상태 조회
+    @GetMapping("/seats")
+    public Mono<ResponseEntity<SingleResponseResult<Map<String, Boolean>>>> getUserSeats(HttpServletRequest request) {
+        User user = userService.getUserFromRequest(request);
+        return ticketingService.getUserSeats(user)
+                .map(seats -> ResponseEntity.ok(new SingleResponseResult<>(seats)));
     }
 }
