@@ -133,4 +133,14 @@ public class TicketingService {
                         entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
                 );
     }
+
+    public Mono<Map<String, Boolean>> getSectionSeats(User user, String section) {
+        String redisKey = "ticketingId:" + user.getUserId();
+        return reactiveRedisTemplate.opsForHash().entries(redisKey)
+                .filter(entry -> entry.getKey().toString().startsWith(section + ":"))
+                .collectMap(
+                        entry -> entry.getKey().toString(),
+                        entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
+                );
+    }
 }
