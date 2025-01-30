@@ -9,6 +9,7 @@ import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.ticketing.repository.TicketingRepository;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.config.DynamicScheduler;
+import TiCatch.backend.global.exception.AlreadyReservedException;
 import TiCatch.backend.global.exception.NotExistTicketException;
 import TiCatch.backend.global.exception.NotInProgressTicketException;
 import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
@@ -18,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -142,5 +144,16 @@ public class TicketingService {
                         entry -> entry.getKey().toString(),
                         entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
                 );
+    }
+
+    // 선택한 좌석이 예매 가능한지 확인
+    public void isAvailable(User user, String seatKey) {
+        String redisKey = "ticketingId:" + user.getUserId();
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+
+        String seatStatus = hashOperations.get(redisKey, seatKey);
+        if ("1".equals(seatStatus)) {
+            throw new AlreadyReservedException();
+        }
     }
 }

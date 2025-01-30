@@ -65,10 +65,18 @@ public class TicketingController {
 
     // 특정 구역 좌석 예약 상태 조회
     @GetMapping("/seats/{section}")
-    public Mono<ResponseEntity<SingleResponseResult<Map<String, Boolean>>>> getSectionSeats(
-            HttpServletRequest request, @PathVariable String section) {
+    public Mono<ResponseEntity<SingleResponseResult<Map<String, Boolean>>>> getSectionSeats(HttpServletRequest request, @PathVariable String section) {
         User user = userService.getUserFromRequest(request);
         return ticketingService.getSectionSeats(user, section)
                 .map(seats -> ResponseEntity.ok(new SingleResponseResult<>(seats)));
     }
+
+    // 좌석 예약 가능 여부 확인
+    @GetMapping("/seats/check/{seatKey}")
+    public ResponseEntity<SingleResponseResult<String>> checkSeatAvailability(HttpServletRequest request, @PathVariable String seatKey) {
+        User user = userService.getUserFromRequest(request);
+        ticketingService.isAvailable(user, seatKey);
+        return ResponseEntity.ok(new SingleResponseResult<>("예매가 가능한 좌석입니다."));
+    }
+
 }
