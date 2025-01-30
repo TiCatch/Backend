@@ -12,11 +12,18 @@ import TiCatch.backend.global.config.DynamicScheduler;
 import TiCatch.backend.global.exception.NotExistTicketException;
 import TiCatch.backend.global.exception.NotInProgressTicketException;
 import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 
 @Service
@@ -28,6 +35,18 @@ public class TicketingService {
     private final RedisService redisService;
     private final TicketingRepository ticketingRepository;
     private final DynamicScheduler dynamicScheduler;
+    private static Map<String, Map<Integer, Integer>> SECTION_INFORMATION;
+
+    @PostConstruct
+    public void loadSectionInfo() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            InputStream inputStream = new ClassPathResource("section_info.json").getInputStream();
+            SECTION_INFORMATION = objectMapper.readValue(inputStream, new TypeReference<Map<String, Map<Integer, Integer>>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("좌석을 불러오는 데 실패했습니다.", e);
+        }
+    }
 
     @Transactional
     public TicketingResponseDto createTicket(CreateTicketingDto createTicketingDto, User user) {
