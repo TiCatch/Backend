@@ -18,8 +18,12 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +40,8 @@ public class TicketingService {
     private final TicketingRepository ticketingRepository;
     private final DynamicScheduler dynamicScheduler;
     private static Map<String, Map<Integer, Integer>> SECTION_INFORMATION;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
     @PostConstruct
     public void loadSectionInfo() {
@@ -49,9 +55,31 @@ public class TicketingService {
     }
 
     @Transactional
-    public TicketingResponseDto createTicket(CreateTicketingDto createTicketingDto, User user) {
-        Ticketing newTicketing = ticketingRepository.save(Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING));
-        return TicketingResponseDto.of(newTicketing);
+    public Mono<TicketingResponseDto> createTicket(CreateTicketingDto createTicketingDto, User user) {
+        Ticketing newTicketing = ticketingRepository.save(
+                Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING)
+        );
+
+        String redisKey = "ticketingId:" + user.getUserId();
+
+        return Flux.fromIterable(SECTION_INFORMATION.entrySet())
+                .flatMap(sectionEntry -> {
+                    String section = sectionEntry.getKey();
+                    Map<Integer, Integer> rowInfo = sectionEntry.getValue();
+
+                    return Flux.fromIterable(rowInfo.entrySet())
+                            .flatMap(rowEntry -> {
+                                int row = rowEntry.getKey();
+                                int cols = rowEntry.getValue();
+
+                                return Flux.range(1, cols).map(seat -> {
+                                            String seatKey = section + ":R" + row + ":C" + seat;
+                                            return Map.entry(seatKey, "0");
+                                        });
+                            });
+                })
+                .flatMap(entry -> reactiveRedisTemplate.opsForHash().put(redisKey, entry.getKey(), entry.getValue()))
+                .then(Mono.just(TicketingResponseDto.of(newTicketing)));
     }
 
     public TicketingResponseDto getTicket(Long ticketingId, User user) {
