@@ -156,7 +156,7 @@ public class TicketingService {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 
         String seatStatus = hashOperations.get(redisKey, seatKey);
-        if ("1".equals(seatStatus)) {
+        if (seatStatus.equals("1")) {
             throw new AlreadyReservedException();
         }
     }
