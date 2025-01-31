@@ -131,8 +131,8 @@ public class TicketingService {
         }
     }
 
-    public Mono<Map<String, Boolean>> getTicketingSeats(User user) {
-        String redisKey = "ticketingId:" + user.getUserId();
+    public Mono<Map<String, Boolean>> getTicketingSeats(Long ticketingId) {
+        String redisKey = "ticketingId:" + ticketingId;
         return reactiveRedisTemplate.opsForHash().entries(redisKey)
                 .collectMap(
                         entry -> entry.getKey().toString(),
@@ -140,8 +140,8 @@ public class TicketingService {
                 );
     }
 
-    public Mono<Map<String, Boolean>> getSectionSeats(User user, String section) {
-        String redisKey = "ticketingId:" + user.getUserId();
+    public Mono<Map<String, Boolean>> getSectionSeats(Long ticketingId, String section) {
+        String redisKey = "ticketingId:" + ticketingId;
         return reactiveRedisTemplate.opsForHash().entries(redisKey)
                 .filter(entry -> entry.getKey().toString().startsWith(section + ":"))
                 .collectMap(
@@ -151,8 +151,8 @@ public class TicketingService {
     }
 
     // 선택한 좌석이 예매 가능한지 확인
-    public void isAvailable(User user, String seatKey) {
-        String redisKey = "ticketingId:" + user.getUserId();
+    public void isAvailable(Long ticketingId, String seatKey) {
+        String redisKey = "ticketingId:" + ticketingId;
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 
         String seatStatus = hashOperations.get(redisKey, seatKey);
