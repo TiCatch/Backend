@@ -62,9 +62,11 @@ public class TicketingService {
                 Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING)
         );
 
-        String redisKey = "ticketingId:" + user.getUserId();
+        TicketingResponseDto responseDto = TicketingResponseDto.of(newTicketing);
 
-        return Flux.fromIterable(SECTION_INFORMATION.entrySet())
+        String redisKey = "ticketingId:" + newTicketing.getTicketingId();
+
+        Flux.fromIterable(SECTION_INFORMATION.entrySet())
                 .flatMap(sectionEntry -> {
                     String section = sectionEntry.getKey();
                     Map<Integer, Integer> rowInfo = sectionEntry.getValue();
@@ -81,7 +83,9 @@ public class TicketingService {
                             });
                 })
                 .flatMap(entry -> reactiveRedisTemplate.opsForHash().put(redisKey, entry.getKey(), entry.getValue()))
-                .then(Mono.just(TicketingResponseDto.of(newTicketing)));
+                .subscribe();
+
+        return Mono.just(responseDto);
     }
 
     public TicketingResponseDto getTicket(Long ticketingId, User user) {
