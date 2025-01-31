@@ -131,7 +131,7 @@ public class TicketingService {
         }
     }
 
-    public Mono<Map<String, Boolean>> getUserSeats(User user) {
+    public Mono<Map<String, Boolean>> getTicketingSeats(User user) {
         String redisKey = "ticketingId:" + user.getUserId();
         return reactiveRedisTemplate.opsForHash().entries(redisKey)
                 .collectMap(
