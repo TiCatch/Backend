@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static TiCatch.backend.global.constant.UserConstants.ACTUAL_USERTYPE;
+import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/ticket")
@@ -38,10 +41,10 @@ public class TicketingController {
     @GetMapping("/waiting/{ticketingId}/{userType}")
     public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> startTicketing(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId, @Parameter(description = "유저 유형 (ACTUAL 또는 VIRTUAL)") @PathVariable("userType") String userType) {
         String userId;
-        if (userType.equals("ACTUAL")) {
+        if (userType.equals(ACTUAL_USERTYPE)) {
             userId = userService.getUserFromRequest(request).getUserId().toString();
         } else {
-            userId = "VIRTUAL:" + UUID.randomUUID().toString();
+            userId = VIRTUAL_USERTYPE + UUID.randomUUID().toString();
         }
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.addTicketingWaitingQueue(ticketingId, userId)));
     }

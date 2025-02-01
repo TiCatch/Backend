@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
+import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 
 
 @Service
@@ -63,14 +65,14 @@ public class TicketingService {
     }
 
     private Long assignUserIdWithVirtualUser(String userId) {
-        if(userId.startsWith("VIRTUAL:")) {
-            return 0L;
+        if(userId.startsWith(VIRTUAL_USERTYPE)) {
+            return VIRTUAL_USER_ID;
         }
         return Long.valueOf(userId);
     }
 
     private void validateTicketing(Ticketing ticketing, Long userId) {
-        if(!ticketing.getUser().getUserId().equals(userId) && !userId.equals(0L)) {
+        if(!ticketing.getUser().getUserId().equals(userId) && !userId.equals(VIRTUAL_USER_ID)) {
             throw new UnAuthorizedTicketAccessException();
         }
         if(ticketing.getTicketingStatus() != TicketingStatus.IN_PROGRESS) {
