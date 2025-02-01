@@ -9,13 +9,14 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static TiCatch.backend.global.constant.RedisConstants.WAITING_QUEUE_PREFIX;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisService {
 
 	private final RedisTemplate<String, String> redisTemplate;
-	private final String WAITING_QUEUE_PREFIX = "queue:ticket:";
 
 	public void setValues(String key, String value) {
 		redisTemplate.opsForValue().set(key, value);
