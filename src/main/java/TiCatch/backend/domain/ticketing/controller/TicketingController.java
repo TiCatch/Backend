@@ -12,7 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,9 +26,10 @@ public class TicketingController {
     private final TicketingService ticketingService;
 
     @PostMapping("/new")
-    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> createTicket(HttpServletRequest request, @RequestBody CreateTicketingDto createTicketingDto) {
+    public Mono<ResponseEntity<SingleResponseResult<TicketingResponseDto>>> createTicket(HttpServletRequest request, @RequestBody CreateTicketingDto createTicketingDto) {
         User user = userService.getUserFromRequest(request);
-        return ResponseEntity.ok().body(new SingleResponseResult<>(ticketingService.createTicket(createTicketingDto, user)));
+        return ticketingService.createTicket(createTicketingDto, user)
+                .map(ticket -> ResponseEntity.ok(new SingleResponseResult<>(ticket)));
     }
 
     @GetMapping("/{ticketingId}")
@@ -50,5 +53,26 @@ public class TicketingController {
     public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> getTicketingWaitingStatus(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId) {
         User user = userService.getUserFromRequest(request);
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicketingWaitingStatus(ticketingId, user.getUserId())));
+    }
+
+    // 전체 좌석 예약 상태 조회
+    @GetMapping("/seats/{ticketingId}")
+    public Mono<ResponseEntity<SingleResponseResult<Map<String, Boolean>>>> getTicketingSeats(@PathVariable("ticketingId") Long ticketingId) {
+        return ticketingService.getTicketingSeats(ticketingId)
+                .map(seats -> ResponseEntity.ok(new SingleResponseResult<>(seats)));
+    }
+
+    // 특정 구역 좌석 예약 상태 조회
+    @GetMapping("/seats/{ticketingId}/{section}")
+    public Mono<ResponseEntity<SingleResponseResult<Map<String, Boolean>>>> getSectionSeats(@PathVariable("ticketingId") Long ticketingId, @PathVariable String section) {
+        return ticketingService.getSectionSeats(ticketingId, section)
+                .map(seats -> ResponseEntity.ok(new SingleResponseResult<>(seats)));
+    }
+
+    // 좌석 예약 가능 여부 확인
+    @GetMapping("/seats/{ticketingId}/check/{seatKey}")
+    public ResponseEntity<SingleResponseResult<String>> checkSeatAvailability(@PathVariable("ticketingId") Long ticketingId, @PathVariable String seatKey) {
+        ticketingService.isAvailable(ticketingId, seatKey);
+        return ResponseEntity.ok(new SingleResponseResult<>("예매가 가능한 좌석입니다."));
     }
 }
