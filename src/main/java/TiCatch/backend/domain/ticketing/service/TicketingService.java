@@ -49,7 +49,7 @@ public class TicketingService {
         Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
         validateTicketing(ticketing, responseUserId);
         redisService.addToWaitingQueue(ticketingId, userId);
-        dynamicScheduler.startScheduler(ticketingId, 3);
+        dynamicScheduler.startScheduler(ticketingId);
         return TicketingWaitingResponseDto.of(ticketingId, responseUserId, redisService.getWaitingQueueRank(ticketingId, userId));
     }
 
