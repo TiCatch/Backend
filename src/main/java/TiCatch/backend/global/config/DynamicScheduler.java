@@ -35,7 +35,7 @@ public class DynamicScheduler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
+        }, DYNAMIC_SCHEDULER_INITIAL_DELAY, DYNAMIC_SCHEDULER_PERIOD, TimeUnit.SECONDS);
 
         schedulerMap.put(ticketingId, scheduler);
     }

@@ -14,9 +14,14 @@ import TiCatch.backend.global.exception.NotInProgressTicketException;
 import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 
@@ -77,6 +82,15 @@ public class TicketingService {
         }
         if(ticketing.getTicketingStatus() != TicketingStatus.IN_PROGRESS) {
             throw new NotInProgressTicketException();
+        }
+    }
+
+    @Transactional
+    @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
+    public void activateTicketing() {
+        List<Ticketing> ticketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
+        for(Ticketing ticketing : ticketings) {
+            ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
         }
     }
 }
