@@ -64,6 +64,7 @@ dependencies {
 
 	// Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
 	// JSON
 	implementation 'org.json:json:20090211'
@@ -73,6 +74,9 @@ dependencies {
 
 	// WEBFLUX
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	// TEST DB
+	runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
