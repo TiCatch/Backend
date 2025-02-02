@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -34,7 +35,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TicketingService {
 
@@ -44,6 +45,15 @@ public class TicketingService {
     private static Map<String, Map<Integer, Integer>> SECTION_INFORMATION;
     private final RedisTemplate<String, String> redisTemplate;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+
+    public TicketingService(RedisService redisService, TicketingRepository ticketingRepository, DynamicScheduler dynamicScheduler, RedisTemplate<String, String> redisTemplate,
+                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate) {
+        this.redisService = redisService;
+        this.ticketingRepository = ticketingRepository;
+        this.dynamicScheduler = dynamicScheduler;
+        this.redisTemplate = redisTemplate;
+        this.reactiveRedisTemplate = reactiveRedisTemplate;
+    }
 
     @PostConstruct
     public void loadSectionInfo() {
