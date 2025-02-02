@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static TiCatch.backend.global.constant.SchedulerConstants.*;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,7 +20,7 @@ public class DynamicScheduler {
     private final TicketingBatchProcessService ticketingBatchProcessService;
     private final ConcurrentHashMap<Long, ScheduledExecutorService> schedulerMap = new ConcurrentHashMap<>();
 
-    public void startScheduler(Long ticketingId, int batchSize) {
+    public void startScheduler(Long ticketingId) {
         if (schedulerMap.containsKey(ticketingId)) {
             return;
         }
@@ -26,14 +28,14 @@ public class DynamicScheduler {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, batchSize);
+                Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, BATCH_SIZE);
                 if(targetCount == 0L) {
                     stopScheduler(ticketingId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, 5, 30, TimeUnit.SECONDS);
+        }, DYNAMIC_SCHEDULER_INITIAL_DELAY, DYNAMIC_SCHEDULER_PERIOD, TimeUnit.SECONDS);
 
         schedulerMap.put(ticketingId, scheduler);
     }

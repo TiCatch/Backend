@@ -46,6 +46,10 @@ public class Ticketing extends BaseTimeEntity {
         this.ticketingStatus = ticketingStatus;
     }
 
+    public void changeTicketingStatus(TicketingStatus ticketingStatus) {
+        this.ticketingStatus = ticketingStatus;
+    }
+
     public static Ticketing fromDtoToEntity(CreateTicketingDto createTicketingDto, User user, TicketingStatus ticketingStatus) {
         return Ticketing.builder()
                 .user(user)

@@ -23,6 +23,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -31,6 +32,12 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
+import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
+import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 
 
 @Service
@@ -112,7 +119,7 @@ public class TicketingService {
         Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
         validateTicketing(ticketing, responseUserId);
         redisService.addToWaitingQueue(ticketingId, userId);
-        dynamicScheduler.startScheduler(ticketingId, 3);
+        dynamicScheduler.startScheduler(ticketingId);
         return TicketingWaitingResponseDto.of(ticketingId, responseUserId, redisService.getWaitingQueueRank(ticketingId, userId));
     }
 
@@ -126,14 +133,14 @@ public class TicketingService {
     }
 
     private Long assignUserIdWithVirtualUser(String userId) {
-        if(userId.startsWith("VIRTUAL:")) {
-            return 0L;
+        if(userId.startsWith(VIRTUAL_USERTYPE)) {
+            return VIRTUAL_USER_ID;
         }
         return Long.valueOf(userId);
     }
 
     private void validateTicketing(Ticketing ticketing, Long userId) {
-        if(!ticketing.getUser().getUserId().equals(userId) && !userId.equals(0L)) {
+        if(!ticketing.getUser().getUserId().equals(userId) && !userId.equals(VIRTUAL_USER_ID)) {
             throw new UnAuthorizedTicketAccessException();
         }
         if(ticketing.getTicketingStatus() != TicketingStatus.IN_PROGRESS) {
@@ -158,6 +165,15 @@ public class TicketingService {
                         entry -> entry.getKey().toString(),
                         entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
                 );
+    }
+
+    @Transactional
+    @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
+    public void activateTicketing() {
+        List<Ticketing> ticketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
+        for(Ticketing ticketing : ticketings) {
+            ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
+        }
     }
 
     // 선택한 좌석이 예매 가능한지 확인

@@ -9,17 +9,18 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static TiCatch.backend.global.constant.RedisConstants.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisService {
 
 	private final RedisTemplate<String, String> redisTemplate;
-	private final String WAITING_QUEUE_PREFIX = "queue:ticket:";
 
 	public void setValues(String key, String value) {
 		redisTemplate.opsForValue().set(key, value);
-		redisTemplate.expire(key, 14, TimeUnit.DAYS);
+		redisTemplate.expire(key, EXPIRE_TIMEOUT, TimeUnit.DAYS);
 	}
 
 	public void addToWaitingQueue(Long ticketId, String userId) {
@@ -44,11 +45,11 @@ public class RedisService {
 
 	public Set<ZSetOperations.TypedTuple<String>> getBatchFromQueue(Long ticketId, int batchSize) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
-		return redisTemplate.opsForZSet().rangeWithScores(queueKey, 0, batchSize - 1);
+		return redisTemplate.opsForZSet().rangeWithScores(queueKey, RANGE_START_INDEX, batchSize - 1);
 	}
 
 	public void removeBatchFromQueue(Long ticketId, int batchSize) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
-		redisTemplate.opsForZSet().removeRange(queueKey, 0, batchSize - 1);
+		redisTemplate.opsForZSet().removeRange(queueKey, RANGE_START_INDEX, batchSize - 1);
 	}
 }
