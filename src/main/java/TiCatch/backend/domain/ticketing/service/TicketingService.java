@@ -170,9 +170,13 @@ public class TicketingService {
     @Transactional
     @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
     public void activateTicketing() {
-        List<Ticketing> ticketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
-        for(Ticketing ticketing : ticketings) {
+        List<Ticketing> activateTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
+        List<Ticketing> expiredTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.IN_PROGRESS, LocalDateTime.now().minusMinutes(30));
+        for(Ticketing ticketing : activateTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
+        }
+        for(Ticketing ticketing : expiredTicketings) {
+            ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
         }
     }
 
