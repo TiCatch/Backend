@@ -41,6 +41,13 @@ public class TicketingController {
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getTicket(ticketingId, user)));
     }
 
+    // 티켓팅 취소
+    @PatchMapping("/{ticketingId}")
+    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> cancelTicket(HttpServletRequest request, @PathVariable("ticketingId") Long ticketingId) {
+        User user = userService.getUserFromRequest(request);
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.cancelTicket(ticketingId, user)));
+    }
+
     @GetMapping("/waiting/{ticketingId}/{userType}")
     public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> startTicketing(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId, @Parameter(description = "유저 유형 (ACTUAL 또는 VIRTUAL)") @PathVariable("userType") String userType) {
         String userId;

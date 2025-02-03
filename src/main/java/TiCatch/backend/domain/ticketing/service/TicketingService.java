@@ -186,4 +186,14 @@ public class TicketingService {
             throw new AlreadyReservedException();
         }
     }
+
+    @Transactional
+    public TicketingResponseDto cancelTicket(Long ticketingId, User user) {
+        Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
+        if(!ticketing.getUser().getUserId().equals(user.getUserId())) {
+            throw new UnAuthorizedTicketAccessException();
+        }
+        ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
+        return TicketingResponseDto.of(ticketing);
+    }
 }
