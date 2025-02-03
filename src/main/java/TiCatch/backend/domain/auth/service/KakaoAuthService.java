@@ -10,6 +10,7 @@ import TiCatch.backend.domain.user.entity.Credential;
 import TiCatch.backend.domain.user.entity.CredentialRole;
 import TiCatch.backend.domain.user.repository.CredentialRepository;
 import TiCatch.backend.domain.user.repository.UserRepository;
+import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.exception.NotExistUserException;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -74,13 +76,9 @@ public class KakaoAuthService {
 		Credential credential = credentialRepository.findByCredentialId(
 			user.getCredential().getCredentialId()).orElseThrow(NotExistUserException::new);
 
+		TokenDto tokenDto = jwtProvider.generateTokenDto(user.getCredential().getEmail());
 		log.info("[login] 계정 확인 완료! " + user.getUserNickname() + "님 로그인 성공!");
-		log.info("grantType = {}", tokenDto.getGrantType());
-		log.info("accessToken = {}", tokenDto.getAccessToken());
-		log.info("refreshToken = {}", tokenDto.getRefreshToken());
-
-		//refreshToken을 Redis에 저장
-		redisService.setValues(credential.getEmail() + "_refreshToken", tokenDto.getRefreshToken());
+		redisService.setValues(tokenDto.getRefreshToken(), user.getCredential().getEmail());
 
 		return LoginResponseDto.builder()
 			.tokenDto(tokenDto)
@@ -114,30 +112,17 @@ public class KakaoAuthService {
 
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-		log.info("token-uri = {}", KAKAO_TOKEN_URI);
-
 		ResponseEntity<String> accessTokenResponse =
 			restTemplate.postForEntity(KAKAO_TOKEN_URI, kakaoTokenRequest, String.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		KakaoTokenDto kakaoTokenDto = null;
-
-//		try {
-//			kakaoTokenDto = objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
-//		} catch (JsonProcessingException e) {
-//			log.error(e.toString());
-//		}
 		try {
-			// 변경된 부분: setter 대신 전체 생성자를 활용한 매핑
 			return objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
 		} catch (JsonProcessingException e) {
-			log.error("Error parsing KakaoTokenDto: {}", e.getMessage());
-			throw new RuntimeException("Kakao token parsing failed", e); // 예외 처리 강화
+			throw new RuntimeException();
 		}
-
-//		return kakaoTokenDto;
 	}
 
 	private User getKakaoUserInfo(KakaoTokenDto kakaoTokenDto) {
@@ -196,4 +181,12 @@ public class KakaoAuthService {
 			.build();
 	}
 
+	public TokenDto reissueAccessToken(String refreshToken) {
+		String email = redisService.getValues(refreshToken);
+		if (email == null) {
+			throw new UnAuthorizedAccessException();
+		}
+		TokenDto tokenDto = jwtProvider.generateTokenDto(email);
+		return tokenDto;
+	}
 }
