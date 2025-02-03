@@ -4,8 +4,10 @@ import TiCatch.backend.domain.auth.dto.TokenDto;
 import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
 import TiCatch.backend.domain.auth.dto.response.UserResDto;
 import TiCatch.backend.domain.auth.service.KakaoAuthService;
+import TiCatch.backend.domain.auth.service.RedisService;
 import TiCatch.backend.domain.auth.util.HeaderUtil;
 import TiCatch.backend.global.response.SingleResponseResult;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ public class AuthController {
 
     private final KakaoAuthService kakaoAuthService;
     private final HeaderUtil headerUtil;
+    private final RedisService redisService;
 
     @GetMapping("/login/kakao")
     public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
@@ -44,5 +47,18 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh-token", required = false) String refreshToken, HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("refresh-token", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+        response.addCookie(refreshTokenCookie);
+        if (refreshToken != null) {
+            redisService.deleteValues(refreshToken);
+        }
+        return ResponseEntity.ok().build();
     }
 }

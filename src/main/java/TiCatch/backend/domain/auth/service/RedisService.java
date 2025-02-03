@@ -58,4 +58,8 @@ public class RedisService {
 		ValueOperations<String, String> values = redisTemplate.opsForValue();
 		return values.get(key);
 	}
+
+	public void deleteValues(String key) {
+		redisTemplate.delete(key);
+	}
 }
