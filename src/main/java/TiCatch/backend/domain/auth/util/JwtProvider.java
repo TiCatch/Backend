@@ -34,7 +34,7 @@ public class JwtProvider {
     private String BEARER_TYPE;
     @Value("${jwt.bearer.prefix}")
     private String BEARER_PREFIX;
-    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 2L; // 2시간
+    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 40L;  //40분
     private final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 24L * 7L; //7일
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
@@ -54,7 +54,6 @@ public class JwtProvider {
                 .compact();
 
         String refreshToken = Jwts.builder()
-                .setSubject(email)
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -68,11 +67,8 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String accessToken) {
-
         Claims claims = parseClaims(accessToken);
-
         String email = claims.getSubject();
-
         if (claims.get(AUTHORITIES_KEY) == null) {
             throw new UnAuthorizedAccessException();
         }
