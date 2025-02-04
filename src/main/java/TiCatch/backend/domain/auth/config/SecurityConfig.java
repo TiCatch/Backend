@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/api/auth/reissue").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
+                        .requestMatchers("/auth").permitAll()
                         .requestMatchers("/api/ticket/**").authenticated()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
