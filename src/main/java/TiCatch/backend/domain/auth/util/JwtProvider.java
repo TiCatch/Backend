@@ -86,7 +86,7 @@ public class JwtProvider {
         return new UsernamePasswordAuthenticationToken(userDto, accessToken, authorities);
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token, boolean isReissueRequest) {
 
         try {
             Jwts.parserBuilder()
@@ -94,16 +94,15 @@ public class JwtProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            throw new WrongTokenException();
         } catch (ExpiredJwtException e) {
+            if (isReissueRequest) {
+                log.info("만료된 토큰이지만, 재발급 요청이므로 통과");
+                return false;
+            }
             throw new ExpiredTokenException();
-        } catch (UnsupportedJwtException e) {
+        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException e) {
             throw new WrongTokenException();
-        } catch (IllegalArgumentException e) {
-            log.error("잘못된 Argument를 입력했습니다.");
         }
-        return false;
     }
 
     public Claims parseClaims(String accessToken) {
