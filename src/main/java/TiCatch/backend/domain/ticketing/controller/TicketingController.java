@@ -1,6 +1,8 @@
 package TiCatch.backend.domain.ticketing.controller;
 
 import TiCatch.backend.domain.ticketing.dto.request.CreateTicketingDto;
+import TiCatch.backend.domain.ticketing.dto.request.CompleteTicketingDto;
+import TiCatch.backend.domain.ticketing.dto.response.TicketingCompleteResponseDto;
 import TiCatch.backend.domain.ticketing.dto.response.TicketingResponseDto;
 import TiCatch.backend.domain.ticketing.dto.response.TicketingWaitingResponseDto;
 import TiCatch.backend.domain.ticketing.service.TicketingService;
@@ -84,5 +86,14 @@ public class TicketingController {
     public ResponseEntity<SingleResponseResult<String>> checkSeatAvailability(@PathVariable("ticketingId") Long ticketingId, @PathVariable String seatKey) {
         ticketingService.isAvailable(ticketingId, seatKey);
         return ResponseEntity.ok(new SingleResponseResult<>("예매가 가능한 좌석입니다."));
+    }
+
+    //티켓팅 완료 후 히스토리에 저장
+    @PostMapping("/complete")
+    public ResponseEntity<SingleResponseResult<TicketingCompleteResponseDto>> completeTicketing(
+            HttpServletRequest request, @RequestBody CompleteTicketingDto completeTicketingDto) {
+        User user = userService.getUserFromRequest(request);
+        TicketingCompleteResponseDto response = ticketingService.ticketingComplete(completeTicketingDto, user);
+        return ResponseEntity.ok(new SingleResponseResult<>(response));
     }
 }
