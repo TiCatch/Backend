@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/reissue").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/auth").permitAll()
+                        .requestMatchers("/").permitAll()
                         .requestMatchers("/api/ticket/**").authenticated()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
