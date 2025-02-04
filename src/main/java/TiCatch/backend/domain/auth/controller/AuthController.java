@@ -29,8 +29,10 @@ public class AuthController {
 
     @GetMapping("/login/kakao")
     public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
+        log.info("카카오 로그인 요청 받은 인증 코드: {}", code);
         LoginResponseDto loginResponseDto = kakaoAuthService.kakaoLogin(code);
         HttpHeaders headers = headerUtil.setTokenHeaders(loginResponseDto.getTokenDto(), response);
+        log.info("카카오 로그인 성공! 유저 정보: {}", loginResponseDto.getUserResDto());
         return ResponseEntity.ok().headers(headers)
                 .body(new SingleResponseResult<>(loginResponseDto.getUserResDto()));
     }
