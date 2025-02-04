@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.history.entity;
 
-import TiCatch.backend.domain.ticketing.dto.request.TicketingDto;
+import TiCatch.backend.domain.ticketing.dto.request.CompleteTicketingDto;
 import TiCatch.backend.domain.ticketing.entity.Ticketing;
 import TiCatch.backend.domain.ticketing.entity.TicketingLevel;
 import TiCatch.backend.domain.user.entity.User;
@@ -44,11 +44,11 @@ public class History extends BaseTimeEntity {
     // 티켓팅 시간
     private LocalDateTime ticketingTime;
 
-    public static History of(TicketingDto ticketingDto, User user, Ticketing ticketing) {
+    public static History of(CompleteTicketingDto completeTicketingDto, User user, Ticketing ticketing) {
         return History.builder()
                 .user(user)
                 .ticketingId(ticketing.getTicketingId())
-                .seatInfo(ticketingDto.getSeatInfo())
+                .seatInfo(completeTicketingDto.getSeatInfo())
                 .ticketingLevel(ticketing.getTicketingLevel())
                 .ticketingTime(ticketing.getTicketingTime())
                 .build();
