@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/auth").permitAll()
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/ticket/**").authenticated()
+                        .requestMatchers("/api/ticket/waiting/**").permitAll()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
