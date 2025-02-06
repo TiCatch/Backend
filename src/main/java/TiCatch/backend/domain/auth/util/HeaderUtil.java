@@ -16,6 +16,7 @@ public class HeaderUtil {
         Cookie refreshTokenCookie = new Cookie("refresh-token", tokenDto.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
         response.addCookie(refreshTokenCookie);
         return headers;
