@@ -17,7 +17,6 @@ public class HeaderUtil {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setDomain("ticatch.vercel.app");
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
         response.addCookie(refreshTokenCookie);
         return headers;
