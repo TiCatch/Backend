@@ -3,6 +3,7 @@ package TiCatch.backend.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
@@ -51,5 +52,14 @@ public class RedisService {
 	public void removeBatchFromQueue(Long ticketId, int batchSize) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
 		redisTemplate.opsForZSet().removeRange(queueKey, RANGE_START_INDEX, batchSize - 1);
+	}
+
+	public String getValues(String key) {
+		ValueOperations<String, String> values = redisTemplate.opsForValue();
+		return values.get(key);
+	}
+
+	public void deleteValues(String key) {
+		redisTemplate.delete(key);
 	}
 }
