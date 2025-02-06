@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/ticket/waiting/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
