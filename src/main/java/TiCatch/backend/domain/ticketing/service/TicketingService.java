@@ -1,7 +1,11 @@
 package TiCatch.backend.domain.ticketing.service;
 
 import TiCatch.backend.domain.auth.service.RedisService;
+import TiCatch.backend.domain.history.entity.History;
+import TiCatch.backend.domain.history.repository.HistoryRepository;
 import TiCatch.backend.domain.ticketing.dto.request.CreateTicketingDto;
+import TiCatch.backend.domain.ticketing.dto.request.CompleteTicketingDto;
+import TiCatch.backend.domain.ticketing.dto.response.TicketingCompleteResponseDto;
 import TiCatch.backend.domain.ticketing.dto.response.TicketingResponseDto;
 import TiCatch.backend.domain.ticketing.dto.response.TicketingWaitingResponseDto;
 import TiCatch.backend.domain.ticketing.entity.Ticketing;
@@ -16,7 +20,6 @@ import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
@@ -52,14 +55,16 @@ public class TicketingService {
     private static Map<String, Map<Integer, Integer>> SECTION_INFORMATION;
     private final RedisTemplate<String, String> redisTemplate;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+    private final HistoryRepository historyRepository;
 
     public TicketingService(RedisService redisService, TicketingRepository ticketingRepository, DynamicScheduler dynamicScheduler, RedisTemplate<String, String> redisTemplate,
-                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate) {
+                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate, HistoryRepository historyRepository) {
         this.redisService = redisService;
         this.ticketingRepository = ticketingRepository;
         this.dynamicScheduler = dynamicScheduler;
         this.redisTemplate = redisTemplate;
         this.reactiveRedisTemplate = reactiveRedisTemplate;
+        this.historyRepository = historyRepository;
     }
 
     @PostConstruct
@@ -199,5 +204,18 @@ public class TicketingService {
         }
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
         return TicketingResponseDto.of(ticketing);
+    }
+
+    @Transactional
+    public TicketingCompleteResponseDto ticketingComplete(CompleteTicketingDto completeTicketingDto, User user) {
+        Ticketing ticketing = ticketingRepository.findById(completeTicketingDto.getTicketingId())
+                .orElseThrow(NotExistTicketException::new);
+
+        //티켓팅 상태 완료로 변경
+        ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
+        History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing));
+        log.info("예약 기록 저장 완료: {}", history);
+
+        return TicketingCompleteResponseDto.of(ticketing, history);
     }
 }
