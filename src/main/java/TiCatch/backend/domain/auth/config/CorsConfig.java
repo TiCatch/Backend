@@ -27,7 +27,6 @@ public class CorsConfig {
         config.addAllowedOrigin(localOrigin);
         config.addAllowedOrigin(ec2Origin);
         config.addAllowedOrigin(vercelOrigin);
-        config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.addExposedHeader("Authorization");
