@@ -22,7 +22,7 @@ public class HeaderUtil {
         response.setHeader(
                 "Set-Cookie",
                 String.format(
-                        "refresh-token=%s; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=604800",
+                        "refresh-token=%s; Path=/; HttpOnly; Secure; SameSite=None; Partitioned; Max-Age=604800",
                         tokenDto.getRefreshToken()
                 )
         );
