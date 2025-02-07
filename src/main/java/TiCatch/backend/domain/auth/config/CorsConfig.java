@@ -24,9 +24,9 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin(localOrigin);
-        config.addAllowedOrigin(ec2Origin);
-        config.addAllowedOrigin(vercelOrigin);
+        config.addAllowedOriginPattern(localOrigin);
+        config.addAllowedOriginPattern(ec2Origin);
+        config.addAllowedOriginPattern(vercelOrigin);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.addExposedHeader("Authorization");
