@@ -8,6 +8,7 @@ import TiCatch.backend.domain.auth.service.RedisService;
 import TiCatch.backend.domain.auth.util.HeaderUtil;
 import TiCatch.backend.global.response.SingleResponseResult;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +29,10 @@ public class AuthController {
     private final RedisService redisService;
 
     @GetMapping("/login/kakao")
-    public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
+    public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletRequest request, HttpServletResponse response) {
         log.info("카카오 로그인 요청 받은 인증 코드: {}", code);
         LoginResponseDto loginResponseDto = kakaoAuthService.kakaoLogin(code);
+        request.setAttribute("tokenDto", loginResponseDto.getTokenDto());
         HttpHeaders headers = headerUtil.setTokenHeaders(loginResponseDto.getTokenDto(), response);
         log.info("카카오 로그인 성공! 유저 정보: {}", loginResponseDto.getUserResDto());
         return ResponseEntity.ok().headers(headers)
