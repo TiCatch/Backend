@@ -19,6 +19,13 @@ public class HeaderUtil {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
         response.addCookie(refreshTokenCookie);
+        response.setHeader(
+                "Set-Cookie",
+                String.format(
+                        "refresh-token=%s; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=604800",
+                        tokenDto.getRefreshToken()
+                )
+        );
         return headers;
     }
 }

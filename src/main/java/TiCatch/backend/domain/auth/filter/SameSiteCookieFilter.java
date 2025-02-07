@@ -8,11 +8,13 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import TiCatch.backend.domain.auth.dto.TokenDto;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SameSiteCookieFilter implements Filter {
@@ -25,10 +27,11 @@ public class SameSiteCookieFilter implements Filter {
             TokenDto tokenDto = (TokenDto) httpServletRequest.getAttribute("tokenDto");
 
             if (tokenDto != null) {
-                httpServletResponse.setHeader(
+                log.info("SameSiteCookieFilter 로직 수행");
+                httpServletResponse.addHeader(
                         "Set-Cookie",
                         String.format(
-                                "refresh-token=%s; Path=/; HttpOnly; Secure; SameSite=None; Partitioned; Max-Age=604800; Domain=ticatch.vercel.app",
+                                "refresh-token=%s; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=604800;",
                                 tokenDto.getRefreshToken()
                         )
                 );
