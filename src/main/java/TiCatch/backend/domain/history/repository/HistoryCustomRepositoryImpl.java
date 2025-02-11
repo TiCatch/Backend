@@ -1,7 +1,9 @@
 package TiCatch.backend.domain.history.repository;
 
-import TiCatch.backend.domain.history.dto.response.HistoryPagingResponse;
+import TiCatch.backend.domain.history.dto.response.LevelHistoryResponse;
+import TiCatch.backend.domain.history.dto.response.TicketingHistoryPagingResponse;
 import TiCatch.backend.domain.ticketing.entity.TicketingLevel;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -25,8 +27,8 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<HistoryPagingResponse> findHistoryByUserIdWithPaged(Long userId, Pageable pageable) {
-        List<HistoryPagingResponse> fetchResult = jpaQueryFactory.select(Projections.fields(HistoryPagingResponse.class,
+    public Page<TicketingHistoryPagingResponse> findHistoryByUserIdWithPaged(Long userId, Pageable pageable) {
+        List<TicketingHistoryPagingResponse> fetchResult = jpaQueryFactory.select(Projections.fields(TicketingHistoryPagingResponse.class,
                         history.historyId.as("historyId"),
                         history.user.userId.as("userId"),
                         history.ticketingId.as("ticketingId"),
@@ -49,6 +51,33 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
                 .orElse(0L);
 
         return PageableExecutionUtils.getPage(fetchResult, pageable, () -> total);
+    }
+
+    @Override
+    public LevelHistoryResponse findHistoryByUserIdWithLevelCounts(Long userId) {
+        List<Tuple> result = jpaQueryFactory.select(history.ticketingLevel, history.count())
+                .from(history)
+                .where(userIdEq(userId))
+                .groupBy(history.ticketingLevel)
+                .fetch();
+
+        long easyCount = 0;
+        long normalCount = 0;
+        long hardCount = 0;
+
+        for (Tuple tuple : result) {
+            TicketingLevel level = tuple.get(history.ticketingLevel);
+            long count = tuple.get(history.count());
+            if (level == TicketingLevel.EASY) {
+                easyCount = count;
+            } else if (level == TicketingLevel.NORMAL) {
+                normalCount = count;
+            } else if (level == TicketingLevel.HARD) {
+                hardCount = count;
+            }
+        }
+
+        return new LevelHistoryResponse(easyCount, normalCount, hardCount);
     }
 
     private BooleanExpression userIdEq(Long userId) {

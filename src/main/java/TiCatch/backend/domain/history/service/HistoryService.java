@@ -1,6 +1,7 @@
 package TiCatch.backend.domain.history.service;
 
-import TiCatch.backend.domain.history.dto.response.HistoryPagingResponse;
+import TiCatch.backend.domain.history.dto.response.LevelHistoryResponse;
+import TiCatch.backend.domain.history.dto.response.TicketingHistoryPagingResponse;
 import TiCatch.backend.domain.history.repository.HistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,11 @@ public class HistoryService {
 
     private final HistoryRepository historyRepository;
 
-    public Page<HistoryPagingResponse> getHistoryListWithPaged(Long userId, Pageable pageable) {
+    public Page<TicketingHistoryPagingResponse> getTicketingHistoryWithPaged(Long userId, Pageable pageable) {
          return historyRepository.findHistoryByUserIdWithPaged(userId, pageable);
+    }
+
+    public LevelHistoryResponse getLevelHistory(Long userId) {
+        return historyRepository.findHistoryByUserIdWithLevelCounts(userId);
     }
 }

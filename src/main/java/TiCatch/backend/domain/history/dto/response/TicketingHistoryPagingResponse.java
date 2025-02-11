@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class HistoryPagingResponse {
+public class TicketingHistoryPagingResponse {
     private Long historyId;
     private Long userId;
     private Long ticketingId;
