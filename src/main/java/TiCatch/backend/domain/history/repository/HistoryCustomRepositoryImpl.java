@@ -8,6 +8,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -89,19 +90,12 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
             if (order.getProperty().equals("ticketingTime")) {
                 return order.isAscending() ? history.createdDate.asc() : history.createdDate.desc();
             } else if (order.getProperty().equals("ticketingLevel")) {
-                return order.isAscending()
-                        ? new CaseBuilder()
+                NumberExpression<Integer> caseBuilder = new CaseBuilder()
                         .when(history.ticketingLevel.eq(TicketingLevel.EASY)).then(0)
                         .when(history.ticketingLevel.eq(TicketingLevel.NORMAL)).then(1)
                         .when(history.ticketingLevel.eq(TicketingLevel.HARD)).then(2)
-                        .otherwise(3)
-                        .asc()
-                        : new CaseBuilder()
-                        .when(history.ticketingLevel.eq(TicketingLevel.EASY)).then(0)
-                        .when(history.ticketingLevel.eq(TicketingLevel.NORMAL)).then(1)
-                        .when(history.ticketingLevel.eq(TicketingLevel.HARD)).then(2)
-                        .otherwise(3)
-                        .desc();
+                        .otherwise(3);
+                return order.isAscending() ? caseBuilder.asc() : caseBuilder.desc();
             }
         }
         return history.ticketingTime.desc();
