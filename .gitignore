@@ -39,3 +39,6 @@ out/
 ### DB ###
 /src/main/resources/application.yml
 /src/test/resources/application.yml
+
+### QClass ###
+/src/main/generated/
