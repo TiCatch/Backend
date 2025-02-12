@@ -54,7 +54,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = "refresh-token", required = false) String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<SingleResponseResult<String>> logout(@CookieValue(value = "refresh-token", required = false) String refreshToken, HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refresh-token", null);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
@@ -63,6 +63,6 @@ public class AuthController {
         if (refreshToken != null) {
             redisService.deleteValues(refreshToken);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new SingleResponseResult<>("로그아웃 성공!"));
     }
 }
