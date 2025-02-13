@@ -79,15 +79,13 @@ public class TicketingScheduler {
 
         String redisKey = "ticketingId:" + ticketingId;
 
+        Map<Object, Object> seatStatusMap = redisTemplate.opsForHash().entries(redisKey);
         List<String> availableSeats = new ArrayList<>();
-        Set<Object> seatKeysObj = redisTemplate.opsForHash().keys(redisKey);
-        for (Object key : seatKeysObj) {
-            String seat = String.valueOf(key);
-            if (Objects.equals(redisTemplate.opsForHash().get(redisKey, seat), "0")) {
-                availableSeats.add(seat);
+        for (Map.Entry<Object, Object> entry : seatStatusMap.entrySet()) {
+            if (entry.getValue().equals("0")) {
+                availableSeats.add(entry.getKey().toString());
             }
         }
-
         // 예약 가능한 좌석이 없으면 스케줄러 종료
         if (availableSeats.isEmpty()) {
             log.info(" 매진됐습니다!! 스케줄러 종료.");
@@ -113,8 +111,8 @@ public class TicketingScheduler {
         for (String seat : sortedSeatList) {
             if (count >= maxCount) break;
 
-            if (Objects.equals(redisTemplate.opsForHash().get(redisKey, seat), "0")) {
-                redisTemplate.opsForHash().put(redisKey, seat, "1"); // 예약 상태 X->O
+            if (seatStatusMap.get(seat).equals("0")) {
+                redisTemplate.opsForHash().put(redisKey, seat, "1");
                 log.info("### 예약 완료: Ticketing ID={}, Seat={}", ticketingId, seat);
                 count++;
             }
