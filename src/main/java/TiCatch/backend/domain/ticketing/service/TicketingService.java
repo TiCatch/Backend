@@ -220,6 +220,10 @@ public class TicketingService {
         History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing));
         log.info("예약 기록 저장 완료: {}", history);
 
+        // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
+        ticketingScheduler.stopTicketingScheduler(ticketing.getTicketingId());
+        log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
+
         return TicketingCompleteResponseDto.of(ticketing, history);
     }
 }
