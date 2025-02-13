@@ -56,15 +56,17 @@ public class TicketingService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
     private final HistoryRepository historyRepository;
+    private final TicketingScheduler ticketingScheduler;
 
     public TicketingService(RedisService redisService, TicketingRepository ticketingRepository, DynamicScheduler dynamicScheduler, RedisTemplate<String, String> redisTemplate,
-                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate, HistoryRepository historyRepository) {
+                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate, HistoryRepository historyRepository, TicketingScheduler ticketingScheduler) {
         this.redisService = redisService;
         this.ticketingRepository = ticketingRepository;
         this.dynamicScheduler = dynamicScheduler;
         this.redisTemplate = redisTemplate;
         this.reactiveRedisTemplate = reactiveRedisTemplate;
         this.historyRepository = historyRepository;
+        this.ticketingScheduler = ticketingScheduler;
     }
 
     @PostConstruct
@@ -99,9 +101,9 @@ public class TicketingService {
                                 int cols = rowEntry.getValue();
 
                                 return Flux.range(1, cols).map(seat -> {
-                                            String seatKey = section + ":R" + row + ":C" + seat;
-                                            return Map.entry(seatKey, "0");
-                                        });
+                                    String seatKey = section + ":R" + row + ":C" + seat;
+                                    return Map.entry(seatKey, "0");
+                                });
                             });
                 })
                 .flatMap(entry -> reactiveRedisTemplate.opsForHash().put(redisKey, entry.getKey(), entry.getValue()))
@@ -179,6 +181,8 @@ public class TicketingService {
         List<Ticketing> expiredTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.IN_PROGRESS, LocalDateTime.now().minusMinutes(30));
         for(Ticketing ticketing : activateTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
+            log.info("@@@ Ticketing ID={} 번 티켓팅 시작, 난이도 : {}", ticketing.getTicketingId(),ticketing.getTicketingLevel());
+            ticketingScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
         }
         for(Ticketing ticketing : expiredTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
