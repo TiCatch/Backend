@@ -85,8 +85,8 @@ public class MakeSeatWeight {
                 }
             }
 
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("src/main/resources/seat_weights.json"), seatWeights);
-            System.out.println("좌석별 가중치 파일 생성 완료");
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(
+                    new File("src/main/resources/seat_weights.json"), seatWeights);
 
         } catch (IOException e) {
             e.printStackTrace();
