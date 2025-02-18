@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
 
 @Service
 @Slf4j
@@ -77,7 +78,7 @@ public class TicketingScheduler {
     private void processTicketing(Long ticketingId, int maxCount) {
         log.info("티켓팅 스케줄러 실행 - Ticketing ID={}", ticketingId);
 
-        String redisKey = "ticketingId:" + ticketingId;
+        String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
 
         Map<Object, Object> seatStatusMap = redisTemplate.opsForHash().entries(redisKey);
         List<String> availableSeats = new ArrayList<>();
