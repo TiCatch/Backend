@@ -56,17 +56,15 @@ public class TicketingService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
     private final HistoryRepository historyRepository;
-    private final TicketingScheduler ticketingScheduler;
 
     public TicketingService(RedisService redisService, TicketingRepository ticketingRepository, DynamicScheduler dynamicScheduler, RedisTemplate<String, String> redisTemplate,
-                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate, HistoryRepository historyRepository, TicketingScheduler ticketingScheduler) {
+                            @Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, String> reactiveRedisTemplate, HistoryRepository historyRepository) {
         this.redisService = redisService;
         this.ticketingRepository = ticketingRepository;
         this.dynamicScheduler = dynamicScheduler;
         this.redisTemplate = redisTemplate;
         this.reactiveRedisTemplate = reactiveRedisTemplate;
         this.historyRepository = historyRepository;
-        this.ticketingScheduler = ticketingScheduler;
     }
 
     @PostConstruct
@@ -182,7 +180,7 @@ public class TicketingService {
         for(Ticketing ticketing : activateTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
             log.info("@@@ Ticketing ID={} 번 티켓팅 시작, 난이도 : {}", ticketing.getTicketingId(),ticketing.getTicketingLevel());
-            ticketingScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
+            dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
         }
         for(Ticketing ticketing : expiredTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
@@ -221,7 +219,7 @@ public class TicketingService {
         log.info("예약 기록 저장 완료: {}", history);
 
         // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
-        ticketingScheduler.stopTicketingScheduler(ticketing.getTicketingId());
+        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
 
         return TicketingCompleteResponseDto.of(ticketing, history);
