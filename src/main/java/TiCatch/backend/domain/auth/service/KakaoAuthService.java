@@ -17,6 +17,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -30,8 +37,10 @@ import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.exception.NotExistUserException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -95,35 +104,78 @@ public class KakaoAuthService {
 			.build();
 	}
 
-	private KakaoTokenDto getKakaoAccessToken(String code) {
+//	private KakaoTokenDto getKakaoAccessToken(String code) {
+//
+//		HttpHeaders headers = new HttpHeaders();
+//		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//		headers.add("Accept", "application/json");
+//
+//		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//		params.add("grant_type", KAKAO_GRANT_TYPE);
+//		params.add("client_id", KAKAO_CLIENT_ID);
+//		params.add("redirect_uri", KAKAO_REDIRECT_URI);
+//		params.add("code", code);
+//		params.add("client_secret", KAKAO_CLIENT_SECRET);
+//
+//
+//		log.info("/////////////////KAKAO_TOKEN_URI : {}", KAKAO_TOKEN_URI);
+//		HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
+//
+//		RestTemplate restTemplate = new RestTemplate();
+//		restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+//		ResponseEntity<String> accessTokenResponse =
+//			restTemplate.postForEntity(KAKAO_TOKEN_URI, kakaoTokenRequest, String.class);
+//
+//		ObjectMapper objectMapper = new ObjectMapper();
+//		objectMapper.registerModule(new JavaTimeModule());
+//		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//		try {
+//			return objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
+//		} catch (JsonProcessingException e) {
+//			throw new RuntimeException();
+//		}
+//	}
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-		headers.add("Accept", "application/json");
+	public KakaoTokenDto getKakaoAccessToken(String code) {
+		log.info("///////////////// KAKAO_TOKEN_URI : {}", KAKAO_TOKEN_URI);
 
-		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-		params.add("grant_type", KAKAO_GRANT_TYPE);
-		params.add("client_id", KAKAO_CLIENT_ID);
-		params.add("redirect_uri", KAKAO_REDIRECT_URI);
-		params.add("code", code);
-		params.add("client_secret", KAKAO_CLIENT_SECRET);
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			HttpPost httpPost = new HttpPost(KAKAO_TOKEN_URI);
 
+			// 헤더 설정
+			httpPost.setHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+			httpPost.setHeader("Accept", "application/json");
 
-		log.info("/////////////////KAKAO_TOKEN_URI : {}", KAKAO_TOKEN_URI);
-		HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
+			// 요청 바디 설정 (URL 인코딩된 폼 데이터)
+			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+			params.add("grant_type", KAKAO_GRANT_TYPE);
+			params.add("client_id", KAKAO_CLIENT_ID);
+			params.add("redirect_uri", KAKAO_REDIRECT_URI);
+			params.add("code", code);
+			params.add("client_secret", KAKAO_CLIENT_SECRET);
 
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-		ResponseEntity<String> accessTokenResponse =
-			restTemplate.postForEntity(KAKAO_TOKEN_URI, kakaoTokenRequest, String.class);
+			String formData = params.entrySet().stream()
+					.flatMap(entry -> entry.getValue().stream().map(value -> entry.getKey() + "=" + value))
+					.collect(Collectors.joining("&"));
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		try {
-			return objectMapper.readValue(accessTokenResponse.getBody(), KakaoTokenDto.class);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException();
+			httpPost.setEntity(new StringEntity(formData, StandardCharsets.UTF_8));
+
+			// HTTP 요청 보내기
+			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+				String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+				log.info("Kakao Token Response: {}", responseBody);
+
+				// JSON 파싱
+				ObjectMapper objectMapper = new ObjectMapper();
+				objectMapper.registerModule(new JavaTimeModule());
+				objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				return objectMapper.readValue(responseBody, KakaoTokenDto.class);
+			} catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+			throw new RuntimeException("카카오 액세스 토큰 요청 중 오류 발생", e);
 		}
 	}
 
