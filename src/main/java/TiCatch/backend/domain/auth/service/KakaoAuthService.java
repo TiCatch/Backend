@@ -108,6 +108,8 @@ public class KakaoAuthService {
 		params.add("code", code);
 		params.add("client_secret", KAKAO_CLIENT_SECRET);
 
+
+		log.info("/////////////////KAKAO_TOKEN_URI : {}", KAKAO_TOKEN_URI);
 		HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
 
 		RestTemplate restTemplate = new RestTemplate();
