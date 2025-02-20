@@ -49,7 +49,6 @@ jobs:
           sudo docker pull ${{ secrets.DOCKER_REPO }}
           sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
           sudo docker run --name github-actions-demo --rm -d \
-            --network=host \
             -p 443:443 \
             --dns 8.8.8.8 \
             --dns 8.8.4.4 \
