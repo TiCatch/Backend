@@ -58,8 +58,8 @@ public class PaymentService {
 
         parameters.put("cid",cid);
         parameters.put("tid", tid);
-        parameters.put("partner_order_id", "1234567890");
-        parameters.put("partner_user_id", "ticatch");
+        parameters.put("partner_order_id", PaymentConstants.PARTNER_ORDER_ID);
+        parameters.put("partner_user_id", PaymentConstants.PARTNER_USER_ID);
         parameters.put("pg_token", pgToken);
 
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
