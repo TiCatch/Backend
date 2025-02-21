@@ -3,6 +3,7 @@ package TiCatch.backend.domain.payment.service;
 import TiCatch.backend.domain.payment.dto.ApproveResponse;
 import TiCatch.backend.domain.payment.dto.ReadyResponse;
 import lombok.RequiredArgsConstructor;
+import TiCatch.backend.global.constant.PaymentConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -31,21 +32,21 @@ public class PaymentService {
     public ReadyResponse ready(String name, int totalPrice){
         Map<String, String> parameters = new HashMap<>();
         parameters.put("cid", cid);
-        parameters.put("partner_order_id", "1234567890");
-        parameters.put("partner_user_id", "ticatch");
+        parameters.put("partner_order_id", PaymentConstants.PARTNER_ORDER_ID);
+        parameters.put("partner_user_id", PaymentConstants.PARTNER_USER_ID);
         parameters.put("item_name" , name);
         parameters.put("quantity","1");
         parameters.put("total_amount", String.valueOf(totalPrice));
         parameters.put("tax_free_amount","0");
-        parameters.put("approval_url", sampleHost +"/order/pay/completed");
-        parameters.put("cancel_url",sampleHost + "/order/pay/cancel");
-        parameters.put("fail_url", sampleHost + "order/pay/fail");
+        parameters.put("approval_url", sampleHost + PaymentConstants.PAYMENT_SUCCESS_URL);
+        parameters.put("cancel_url",sampleHost + PaymentConstants.PAYMENT_CANCEL_URL);
+        parameters.put("fail_url", sampleHost + PaymentConstants.PAYMENT_FAIL_URL);
 
         HttpEntity<Map<String,String>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
 
         RestTemplate template = new RestTemplate();
 
-        String url = "https://open-api.kakaopay.com/online/v1/payment/ready";
+        String url = PaymentConstants.PAYMENT_READY_URL;
 
         ResponseEntity<ReadyResponse> responseEntity = template.postForEntity(url, requestEntity, ReadyResponse.class);
         return responseEntity.getBody();
@@ -64,7 +65,7 @@ public class PaymentService {
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
 
         RestTemplate template = new RestTemplate();
-        String url = "https://open-api.kakaopay.com/online/v1/payment/approve";
+        String url = PaymentConstants.PAYMENT_APPROVE_URL;
         ApproveResponse approveResponse = template.postForObject(url,requestEntity, ApproveResponse.class);
 
         return approveResponse;
