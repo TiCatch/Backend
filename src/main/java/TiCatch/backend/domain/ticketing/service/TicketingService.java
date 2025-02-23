@@ -222,6 +222,8 @@ public class TicketingService {
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
 
+        redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
+
         return TicketingCompleteResponseDto.of(ticketing, history);
     }
 }
