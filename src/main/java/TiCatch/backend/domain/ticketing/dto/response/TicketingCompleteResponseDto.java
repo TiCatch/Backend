@@ -14,16 +14,18 @@ public class TicketingCompleteResponseDto {
     private Long ticketingId;
     private TicketingLevel ticketingLevel;
     private String seatInfo;
+    private int ticketingScore;
     private LocalDateTime ticketingStartTime;
     private LocalDateTime ticketingEndTime;
 
     @Builder
     private TicketingCompleteResponseDto(Long userId, Long ticketingId, TicketingLevel ticketingLevel,
-                                         String seatInfo, LocalDateTime ticketingStartTime, LocalDateTime ticketingEndTime) {
+                                         String seatInfo, int ticketingScore, LocalDateTime ticketingStartTime, LocalDateTime ticketingEndTime) {
         this.userId = userId;
         this.ticketingId = ticketingId;
         this.ticketingLevel = ticketingLevel;
         this.seatInfo = seatInfo;
+        this.ticketingScore = ticketingScore;
         this.ticketingStartTime = ticketingStartTime;
         this.ticketingEndTime = ticketingEndTime;
     }
@@ -34,6 +36,7 @@ public class TicketingCompleteResponseDto {
                 .ticketingId(ticketing.getTicketingId())
                 .ticketingLevel(ticketing.getTicketingLevel())
                 .seatInfo(history.getSeatInfo())
+                .ticketingScore(history.getTicketingScore())
                 .ticketingStartTime(ticketing.getTicketingTime())
                 .ticketingEndTime(history.getCreatedDate())
                 .build();

@@ -38,6 +38,7 @@ import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
 import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
@@ -213,17 +214,23 @@ public class TicketingService {
         Ticketing ticketing = ticketingRepository.findById(completeTicketingDto.getTicketingId())
                 .orElseThrow(NotExistTicketException::new);
 
-        //티켓팅 상태 완료로 변경
+        Object seatScore = redisTemplate.opsForHash().get("seat_score", completeTicketingDto.getSeatInfo());
+
+        double levelScore = 1;
+        if(ticketing.getTicketingLevel() == NORMAL){
+            levelScore = 1.5;
+        }else if(ticketing.getTicketingLevel() == HARD){
+            levelScore = 1.8;
+        }
+        int ticketingScore = (int)(levelScore * Integer.parseInt(seatScore.toString()));
+
         ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
-        History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing));
-        log.info("예약 기록 저장 완료: {}", history);
+        History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
 
         // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
-
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
-
         return TicketingCompleteResponseDto.of(ticketing, history);
     }
 }
