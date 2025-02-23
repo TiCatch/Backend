@@ -206,6 +206,7 @@ public class TicketingService {
             throw new UnAuthorizedTicketAccessException();
         }
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
+        redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
 
