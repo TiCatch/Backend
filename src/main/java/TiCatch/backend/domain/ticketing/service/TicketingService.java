@@ -37,7 +37,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
@@ -84,7 +83,6 @@ public class TicketingService {
                 Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING)
         );
 
-        addTicketingToControlQueue(newTicketing.getTicketingId(), createTicketingDto.getTicketingTime());
         addExpiryToControlQueue(newTicketing.getTicketingId(), createTicketingDto.getTicketingTime());
 
         TicketingResponseDto responseDto = TicketingResponseDto.of(newTicketing);
@@ -116,17 +114,12 @@ public class TicketingService {
     private void addExpiryToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
         long nowMillis = Instant.now().toEpochMilli();
         long startTime = ticketingTime.toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
-
-        // Expiry 설정 (ticketingTime까지 대기 후 자동 이벤트 발생)
-        long ttl = (startTime - nowMillis) / 1000;
-        redisService.addExpiryToControlQueue(ticketingId, ttl);
-    }
-
-    private void addTicketingToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
-        long startTime = ticketingTime.toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
         long endTime = ticketingTime.plusMinutes(30).toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
-        redisService.addToControlQueue(ticketingId, startTime);
-        redisService.addToControlQueue(ticketingId, endTime);
+
+        long startExpireTime = (startTime - nowMillis) / 1000;
+        long endExpireTime = (endTime - nowMillis) / 1000;
+        redisService.addExpiryToControlQueue(ticketingId, startExpireTime, TicketingStatus.IN_PROGRESS);
+        redisService.addExpiryToControlQueue(ticketingId, endExpireTime, TicketingStatus.COMPLETED);
     }
 
     public TicketingResponseDto getTicket(Long ticketingId, User user) {
@@ -189,21 +182,6 @@ public class TicketingService {
                         entry -> entry.getKey().toString(),
                         entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
                 );
-    }
-
-    @Transactional
-//    @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
-    public void activateTicketing() {
-        List<Ticketing> activateTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
-        List<Ticketing> expiredTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.IN_PROGRESS, LocalDateTime.now().minusMinutes(30));
-        for(Ticketing ticketing : activateTicketings) {
-            ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
-            log.info("@@@ Ticketing ID={} 번 티켓팅 시작, 난이도 : {}", ticketing.getTicketingId(),ticketing.getTicketingLevel());
-            dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
-        }
-        for(Ticketing ticketing : expiredTicketings) {
-            ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
-        }
     }
 
     // 선택한 좌석이 예매 가능한지 확인
