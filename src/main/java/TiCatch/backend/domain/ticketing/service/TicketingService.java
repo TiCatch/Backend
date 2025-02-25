@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.ticketing.service;
 
-import TiCatch.backend.domain.auth.service.RedisService;
+import TiCatch.backend.global.service.redis.RedisService;
 import TiCatch.backend.domain.history.entity.History;
 import TiCatch.backend.domain.history.repository.HistoryRepository;
 import TiCatch.backend.domain.ticketing.dto.request.CreateTicketingDto;
@@ -26,7 +26,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -34,11 +33,12 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
@@ -84,6 +84,9 @@ public class TicketingService {
                 Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING)
         );
 
+        addTicketingToControlQueue(newTicketing.getTicketingId(), createTicketingDto.getTicketingTime());
+        addExpiryToControlQueue(newTicketing.getTicketingId(), createTicketingDto.getTicketingTime());
+
         TicketingResponseDto responseDto = TicketingResponseDto.of(newTicketing);
 
         String redisKey = TICKETING_SEAT_PREFIX + newTicketing.getTicketingId();
@@ -108,6 +111,22 @@ public class TicketingService {
                 .subscribe();
 
         return Mono.just(responseDto);
+    }
+
+    private void addExpiryToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
+        long nowMillis = Instant.now().toEpochMilli();
+        long startTime = ticketingTime.toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
+
+        // Expiry 설정 (ticketingTime까지 대기 후 자동 이벤트 발생)
+        long ttl = (startTime - nowMillis) / 1000;
+        redisService.addExpiryToControlQueue(ticketingId, ttl);
+    }
+
+    private void addTicketingToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
+        long startTime = ticketingTime.toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
+        long endTime = ticketingTime.plusMinutes(30).toEpochSecond(ZoneOffset.of("+09:00")) * 1000;
+        redisService.addToControlQueue(ticketingId, startTime);
+        redisService.addToControlQueue(ticketingId, endTime);
     }
 
     public TicketingResponseDto getTicket(Long ticketingId, User user) {
@@ -173,7 +192,7 @@ public class TicketingService {
     }
 
     @Transactional
-    @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
+//    @Scheduled(fixedRate = TICKETING_SCHEDULER_PERIOD)
     public void activateTicketing() {
         List<Ticketing> activateTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.WAITING, LocalDateTime.now());
         List<Ticketing> expiredTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.IN_PROGRESS, LocalDateTime.now().minusMinutes(30));

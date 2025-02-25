@@ -4,7 +4,7 @@ import TiCatch.backend.domain.auth.dto.TokenDto;
 import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
 import TiCatch.backend.domain.auth.dto.response.UserResDto;
 import TiCatch.backend.domain.auth.service.KakaoAuthService;
-import TiCatch.backend.domain.auth.service.RedisService;
+import TiCatch.backend.global.service.redis.RedisService;
 import TiCatch.backend.domain.auth.util.HeaderUtil;
 import TiCatch.backend.global.response.SingleResponseResult;
 import jakarta.servlet.http.Cookie;

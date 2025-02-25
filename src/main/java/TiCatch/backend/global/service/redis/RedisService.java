@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.service;
+package TiCatch.backend.global.service.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +28,14 @@ public class RedisService {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
 		double score = System.currentTimeMillis();
 		redisTemplate.opsForZSet().add(queueKey, userId, score);
+	}
+
+	public void addToControlQueue(Long ticketId, long ticketingTime) {
+		redisTemplate.opsForZSet().add(TICKETING_CONTROL_PREFIX, String.valueOf(ticketId), ticketingTime);
+	}
+
+	public void addExpiryToControlQueue(Long ticketId, long ttl) {
+		redisTemplate.opsForValue().set(TIME_TO_LIVE_PREFIX + ticketId, String.valueOf(ticketId),  ttl, TimeUnit.SECONDS);
 	}
 
 	public void deleteWaitingQueue(Long ticketId) {
