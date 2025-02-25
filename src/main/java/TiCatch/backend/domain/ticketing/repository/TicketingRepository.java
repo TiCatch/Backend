@@ -10,5 +10,4 @@ import java.util.List;
 
 @Repository
 public interface TicketingRepository extends JpaRepository<Ticketing, Long> {
-    List<Ticketing> findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus ticketingStatus, LocalDateTime now);
 }

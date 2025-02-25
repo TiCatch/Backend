@@ -78,7 +78,7 @@ public class RedisConfig {
 		return new ReactiveRedisTemplate<>(factory, serializationContext);
 	}
 
-	// ✅ Key Expiry 이벤트 감지를 위한 RedisMessageListenerContainer 추가
+	// Key Expiry 이벤트 감지를 위한 RedisMessageListenerContainer 추가
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(
 			RedisConnectionFactory connectionFactory,
