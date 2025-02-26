@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.ticketing.service;
 
-import TiCatch.backend.domain.auth.service.RedisService;
+import TiCatch.backend.global.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ZSetOperations;
