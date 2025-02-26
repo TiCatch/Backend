@@ -9,15 +9,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RedisExpirationListener implements MessageListener {
 
     private final DynamicScheduler dynamicScheduler;
     private final TicketingRepository ticketingRepository;
 
     @Override
+    @Transactional
     public void onMessage(Message message, byte[] pattern) {
         String expiredMessageKey = message.toString();
         TicketingStatus ticketingStatus = TicketingStatus.valueOf(expiredMessageKey.split(":")[0]);
