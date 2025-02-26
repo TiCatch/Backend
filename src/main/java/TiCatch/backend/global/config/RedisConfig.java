@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.config;
+package TiCatch.backend.global.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +11,13 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import TiCatch.backend.global.service.redis.RedisExpirationListener;
 
 @Configuration
 public class RedisConfig {
@@ -27,15 +32,14 @@ public class RedisConfig {
 	private String redisPassword;
 
 	@Bean
-	@Primary  // RedisTemplate을 기본으로 설정
+	@Primary  // 기본 Redis 연결 설정
 	public RedisConnectionFactory redisConnectionFactory() {
 		RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
 		redisStandaloneConfiguration.setHostName(redisHost);
 		redisStandaloneConfiguration.setPort(Integer.parseInt(redisPort));
 		redisStandaloneConfiguration.setPassword(redisPassword);
 
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisStandaloneConfiguration);
-		return lettuceConnectionFactory;
+		return new LettuceConnectionFactory(redisStandaloneConfiguration);
 	}
 
 	@Bean
@@ -47,7 +51,7 @@ public class RedisConfig {
 		return new LettuceConnectionFactory(redisStandaloneConfiguration);
 	}
 
-	// redis-cli 사용을 위한 설정
+	// RedisTemplate 설정 (동기 방식)
 	@Bean
 	@Qualifier("redisTemplate")
 	public RedisTemplate<String, Object> redisTemplate() {
@@ -58,8 +62,7 @@ public class RedisConfig {
 		return redisTemplate;
 	}
 
-
-	// 비동기 방식의 ReactiveRedisTemplate 추가
+	// ReactiveRedisTemplate 설정 (비동기 방식)
 	@Bean
 	@Qualifier("reactiveRedisTemplate")
 	public ReactiveRedisTemplate<String, String> reactiveRedisTemplate(
@@ -73,5 +76,19 @@ public class RedisConfig {
 				.build();
 
 		return new ReactiveRedisTemplate<>(factory, serializationContext);
+	}
+
+	// Key Expiry 이벤트 감지를 위한 RedisMessageListenerContainer 추가
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+			RedisConnectionFactory connectionFactory,
+			RedisExpirationListener redisExpirationListener) {
+
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.addMessageListener(new MessageListenerAdapter(redisExpirationListener),
+				new PatternTopic("__keyevent@0__:expired")); // 0번 DB 기준
+
+		return container;
 	}
 }
