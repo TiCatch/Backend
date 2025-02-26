@@ -41,16 +41,20 @@ public class History extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private TicketingLevel ticketingLevel;
 
+    // 티켓팅 점수
+    private int ticketingScore;
+
     // 티켓팅 시간
     private LocalDateTime ticketingTime;
 
-    public static History of(CompleteTicketingDto completeTicketingDto, User user, Ticketing ticketing) {
+    public static History of(CompleteTicketingDto completeTicketingDto, User user, Ticketing ticketing, int ticketingScore) {
         return History.builder()
                 .user(user)
                 .ticketingId(ticketing.getTicketingId())
                 .seatInfo(completeTicketingDto.getSeatInfo())
                 .ticketingLevel(ticketing.getTicketingLevel())
                 .ticketingTime(ticketing.getTicketingTime())
+                .ticketingScore(ticketingScore)
                 .build();
     }
 

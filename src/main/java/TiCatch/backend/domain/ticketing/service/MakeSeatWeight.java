@@ -2,6 +2,10 @@ package TiCatch.backend.domain.ticketing.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,9 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+@Component
+@RequiredArgsConstructor
 public class MakeSeatWeight {
 
     public static final Map<String, Integer> SECTION_WEIGHTS = new HashMap<>();
+    private final RedisTemplate<String, String> redisTemplate;
 
     // 구역별 가중치 설정
     static {
@@ -57,7 +64,8 @@ public class MakeSeatWeight {
         SECTION_WEIGHTS.put("S43", 70);
     }
 
-    public static void main(String[] args) {
+    @PostConstruct
+    public void generateSeatWeights() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Map<String, Integer>> sectionInfo = objectMapper.readValue(
@@ -81,6 +89,7 @@ public class MakeSeatWeight {
                     for (int col = 1; col <= seatCount; col++) {
                         String seatKey = String.format("%s:R%s:C%d", section, row, col);
                         seatWeights.put(seatKey, totalWeight);
+                        redisTemplate.opsForHash().put("seat_score", seatKey, String.valueOf(totalWeight));
                     }
                 }
             }
