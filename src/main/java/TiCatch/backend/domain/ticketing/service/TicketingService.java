@@ -227,6 +227,7 @@ public class TicketingService {
 
         ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
         History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
+        user.updateUserScore(ticketingScore);
 
         // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());

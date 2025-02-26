@@ -43,4 +43,8 @@ public class User extends BaseTimeEntity {
                 .userEmail(credential.getEmail())
                 .build();
     }
+
+    public void updateUserScore(int score){
+        this.userScore += score;
+    }
 }
