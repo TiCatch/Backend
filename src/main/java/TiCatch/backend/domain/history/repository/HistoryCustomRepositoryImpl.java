@@ -34,6 +34,7 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
                         history.user.userId.as("userId"),
                         history.ticketingId.as("ticketingId"),
                         history.seatInfo.as("seatInfo"),
+                        history.ticketingScore.as("ticketingScore"),
                         history.ticketingLevel.as("ticketingLevel"),
                         history.ticketingTime.as("ticketingTime")))
                 .from(history)
@@ -89,13 +90,8 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
         for (Sort.Order order : pageable.getSort()) {
             if (order.getProperty().equals("ticketingTime")) {
                 return order.isAscending() ? history.createdDate.asc() : history.createdDate.desc();
-            } else if (order.getProperty().equals("ticketingLevel")) {
-                NumberExpression<Integer> caseBuilder = new CaseBuilder()
-                        .when(history.ticketingLevel.eq(TicketingLevel.EASY)).then(0)
-                        .when(history.ticketingLevel.eq(TicketingLevel.NORMAL)).then(1)
-                        .when(history.ticketingLevel.eq(TicketingLevel.HARD)).then(2)
-                        .otherwise(3);
-                return order.isAscending() ? caseBuilder.asc() : caseBuilder.desc();
+            } else if (order.getProperty().equals("ticketingScore")) {
+                return order.isAscending() ? history.ticketingScore.asc() : history.ticketingScore.desc();
             }
         }
         return history.ticketingTime.desc();

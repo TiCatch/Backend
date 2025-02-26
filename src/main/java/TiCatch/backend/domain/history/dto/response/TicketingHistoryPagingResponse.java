@@ -11,6 +11,7 @@ public class TicketingHistoryPagingResponse {
     private Long userId;
     private Long ticketingId;
     private String seatInfo;
+    private int ticketingScore;
     private TicketingLevel ticketingLevel;
     private LocalDateTime ticketingTime;
 }

@@ -38,10 +38,11 @@ import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
 import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
-
+import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
 
 @Service
 @Slf4j
@@ -86,7 +87,7 @@ public class TicketingService {
 
         TicketingResponseDto responseDto = TicketingResponseDto.of(newTicketing);
 
-        String redisKey = "ticketingId:" + newTicketing.getTicketingId();
+        String redisKey = TICKETING_SEAT_PREFIX + newTicketing.getTicketingId();
 
         Flux.fromIterable(SECTION_INFORMATION.entrySet())
                 .flatMap(sectionEntry -> {
@@ -99,9 +100,9 @@ public class TicketingService {
                                 int cols = rowEntry.getValue();
 
                                 return Flux.range(1, cols).map(seat -> {
-                                            String seatKey = section + ":R" + row + ":C" + seat;
-                                            return Map.entry(seatKey, "0");
-                                        });
+                                    String seatKey = section + ":R" + row + ":C" + seat;
+                                    return Map.entry(seatKey, "0");
+                                });
                             });
                 })
                 .flatMap(entry -> reactiveRedisTemplate.opsForHash().put(redisKey, entry.getKey(), entry.getValue()))
@@ -154,7 +155,7 @@ public class TicketingService {
     }
 
     public Mono<Map<String, Boolean>> getTicketingSeats(Long ticketingId) {
-        String redisKey = "ticketingId:" + ticketingId;
+        String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
         return reactiveRedisTemplate.opsForHash().entries(redisKey)
                 .collectMap(
                         entry -> entry.getKey().toString(),
@@ -163,7 +164,7 @@ public class TicketingService {
     }
 
     public Mono<Map<String, Boolean>> getSectionSeats(Long ticketingId, String section) {
-        String redisKey = "ticketingId:" + ticketingId;
+        String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
         return reactiveRedisTemplate.opsForHash().entries(redisKey)
                 .filter(entry -> entry.getKey().toString().startsWith(section + ":"))
                 .collectMap(
@@ -179,6 +180,8 @@ public class TicketingService {
         List<Ticketing> expiredTicketings = ticketingRepository.findAllByTicketingStatusAndTicketingTimeBefore(TicketingStatus.IN_PROGRESS, LocalDateTime.now().minusMinutes(30));
         for(Ticketing ticketing : activateTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
+            log.info("@@@ Ticketing ID={} 번 티켓팅 시작, 난이도 : {}", ticketing.getTicketingId(),ticketing.getTicketingLevel());
+            dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
         }
         for(Ticketing ticketing : expiredTicketings) {
             ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
@@ -187,7 +190,7 @@ public class TicketingService {
 
     // 선택한 좌석이 예매 가능한지 확인
     public void isAvailable(Long ticketingId, String seatKey) {
-        String redisKey = "ticketingId:" + ticketingId;
+        String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 
         String seatStatus = hashOperations.get(redisKey, seatKey);
@@ -203,6 +206,7 @@ public class TicketingService {
             throw new UnAuthorizedTicketAccessException();
         }
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
+        redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
 
@@ -211,11 +215,23 @@ public class TicketingService {
         Ticketing ticketing = ticketingRepository.findById(completeTicketingDto.getTicketingId())
                 .orElseThrow(NotExistTicketException::new);
 
-        //티켓팅 상태 완료로 변경
-        ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
-        History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing));
-        log.info("예약 기록 저장 완료: {}", history);
+        Object seatScore = redisTemplate.opsForHash().get("seat_score", completeTicketingDto.getSeatInfo());
 
+        double levelScore = 1;
+        if(ticketing.getTicketingLevel() == NORMAL){
+            levelScore = 1.5;
+        }else if(ticketing.getTicketingLevel() == HARD){
+            levelScore = 1.8;
+        }
+        int ticketingScore = (int)(levelScore * Integer.parseInt(seatScore.toString()));
+
+        ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
+        History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
+
+        // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
+        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
+        log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
+        redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingCompleteResponseDto.of(ticketing, history);
     }
 }
