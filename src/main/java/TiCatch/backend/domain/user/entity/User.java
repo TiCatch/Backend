@@ -33,16 +33,7 @@ public class User extends BaseTimeEntity {
     //총 점수
     @Column(nullable = false)
     private int userScore;
-
-    public UserResponseDto toUserResponseDto() {
-        return UserResponseDto.builder()
-                .userId(userId)
-                .userNickname(userNickname)
-                .userScore(userScore)
-                .userEmail(email)
-                .build();
-    }
-
+    
     public void updateUserScore(int score){
         this.userScore += score;
     }

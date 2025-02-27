@@ -23,7 +23,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseResult getUser(@PathVariable Long userId) {
-        log.info("UserController_getUser -> user Id로 유저 정보 조회");
+        log.info("UserController_getUser -> userId로 유저 정보 조회");
         UserResponseDto userResponseDto = userService.getUserById(userId);
         return new SingleResponseResult<>(userResponseDto);
     }
@@ -32,6 +32,6 @@ public class UserController {
     public ResponseResult getUserInfo(HttpServletRequest request) {
         log.info("UserController_getUserInfo -> 토큰 값으로 유저 정보 조회");
         User user = userService.getUserFromRequest(request);
-        return new SingleResponseResult<>(user);
+        return new SingleResponseResult<>(UserResponseDto.fromEntity(user)); // ✅ DTO 변환
     }
 }
