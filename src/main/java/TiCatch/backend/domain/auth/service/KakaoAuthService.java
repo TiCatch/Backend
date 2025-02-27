@@ -6,9 +6,6 @@ import TiCatch.backend.domain.auth.dto.kakao.KakaoTokenDto;
 import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
 import TiCatch.backend.domain.auth.dto.response.UserResDto;
 import TiCatch.backend.domain.auth.util.JwtProvider;
-import TiCatch.backend.domain.user.entity.Credential;
-import TiCatch.backend.domain.user.entity.CredentialRole;
-import TiCatch.backend.domain.user.repository.CredentialRepository;
 import TiCatch.backend.domain.user.repository.UserRepository;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import TiCatch.backend.global.service.redis.RedisService;
@@ -31,7 +28,6 @@ import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.exception.NotExistUserException;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -55,7 +51,6 @@ public class KakaoAuthService {
 	@Autowired
 	private final RedisService redisService;
 	private final JwtProvider jwtProvider;
-	private final CredentialRepository credentialRepository;
 	private final UserRepository userRepository;
 	private TokenDto tokenDto;
 
@@ -73,12 +68,10 @@ public class KakaoAuthService {
 
 		Long userId = user.getUserId();
 		user = userRepository.findByUserId(userId).orElseThrow(NotExistUserException::new);
-		Credential credential = credentialRepository.findByCredentialId(
-			user.getCredential().getCredentialId()).orElseThrow(NotExistUserException::new);
 
-		TokenDto tokenDto = jwtProvider.generateTokenDto(user.getCredential().getEmail());
+		TokenDto tokenDto = jwtProvider.generateTokenDto(user.getEmail());
 		log.info("[login] 계정 확인 완료! " + user.getUserNickname() + "님 로그인 성공!");
-		redisService.setValues(tokenDto.getRefreshToken(), user.getCredential().getEmail());
+		redisService.setValues(tokenDto.getRefreshToken(), user.getEmail());
 
 		return LoginResponseDto.builder()
 			.tokenDto(tokenDto)
@@ -89,8 +82,6 @@ public class KakaoAuthService {
 				.createdDate(user.getCreatedDate())
 				.modifiedDate(user.getModifiedDate())
 				.tokenDto(tokenDto)
-				.credentialId(credential.getCredentialId())
-				.userEmail(credential.getEmail())
 				.build())
 			.build();
 	}
@@ -109,8 +100,6 @@ public class KakaoAuthService {
 		params.add("client_secret", KAKAO_CLIENT_SECRET);
 
 
-		log.info("https.proxyHost: {}", System.getProperty("https.proxyHost"));
-		log.info("https.proxyPort: {}", System.getProperty("https.proxyPort"));
 		HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
 
 		RestTemplate restTemplate = new RestTemplate();
@@ -161,24 +150,9 @@ public class KakaoAuthService {
 		String nickname = (String)kakaoProfile.get("nickname");
 
 		tokenDto = jwtProvider.generateTokenDto(email);
-		Credential credential = credentialRepository.findByEmail(email).orElse(null);
-
-		if (credential != null) {
-			log.info("이미 존재하는 email입니다. 바로 유저 정보를 반환합니다.");
-			return userRepository.findByCredential(credential).orElse(null);
-		}
-
-		credential = Credential.builder()
-			.email(email)
-			.credentialId(UUID.randomUUID().toString())
-			.credentialRole(CredentialRole.USER)
-			.credentialSocialPlatform("kakao")
-			.build();
-
-		credentialRepository.save(credential);
 
 		return User.builder()
-			.credential(credential)
+				.email(email)
 			.userNickname(nickname)
 			.userScore(0)
 			.build();

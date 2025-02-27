@@ -26,21 +26,20 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private String userNickname;
 
+    //이메일
+    @Column(length = 128)
+    private String email;
+
     //총 점수
     @Column(nullable = false)
     private int userScore;
-
-    @OneToOne
-    @JoinColumn(name = "credential_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Credential credential;
 
     public UserResponseDto toUserResponseDto() {
         return UserResponseDto.builder()
                 .userId(userId)
                 .userNickname(userNickname)
                 .userScore(userScore)
-                .credentialId(credential.getCredentialId())
-                .userEmail(credential.getEmail())
+                .userEmail(email)
                 .build();
     }
 
