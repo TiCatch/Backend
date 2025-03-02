@@ -23,18 +23,18 @@ public class AuthController {
     @PostMapping("/login/kakao")
     public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
         LoginResponseDto loginResponseDto = kakaoAuthService.kakaoLogin(code, response);
-        return ResponseEntity.ok().body(new SingleResponseResult<>(loginResponseDto.getUserResDto()));
+        return ResponseEntity.ok(new SingleResponseResult<>(loginResponseDto.getUserResDto()));
     }
 
     @GetMapping("/reissue")
     public ResponseEntity<SingleResponseResult<TokenDto>> refreshAccessToken(@CookieValue(value = "refresh-token", required = false) String refreshToken, HttpServletResponse response) {
         TokenDto newTokenDto = kakaoAuthService.reissueAccessToken(refreshToken, response);
-        return ResponseEntity.ok().body(new SingleResponseResult<>(newTokenDto));
+        return ResponseEntity.ok(new SingleResponseResult<>(newTokenDto));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<SingleResponseResult<String>> logout(@CookieValue(value = "refresh-token", required = false) String refreshToken, HttpServletResponse response) {
         kakaoAuthService.logout(refreshToken, response);
-        return ResponseEntity.ok().body(new SingleResponseResult<>("로그아웃 성공!"));
+        return ResponseEntity.ok(new SingleResponseResult<>("로그아웃 성공!"));
     }
 }
