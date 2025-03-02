@@ -13,8 +13,7 @@ public class UserResponseDto {
     private int userScore;
     private String userEmail;
 
-    // 🔹 엔티티 -> DTO 변환을 담당하는 static 메서드 추가
-    public static UserResponseDto fromEntity(User user) {
+    public static UserResponseDto of(User user) {
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .userNickname(user.getUserNickname())

@@ -25,7 +25,7 @@ public class UserService {
         log.info("UserService_getUserById -> userId로 유저 정보 조회 시도");
         User user = userRepository.findByUserId(userId).orElseThrow(NotExistUserException::new);
 
-        return UserResponseDto.fromEntity(user); // DTO 변환
+        return UserResponseDto.of(user);
     }
 
     public User getUserFromRequest(HttpServletRequest request) {

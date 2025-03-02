@@ -32,6 +32,6 @@ public class UserController {
     public ResponseResult getUserInfo(HttpServletRequest request) {
         log.info("UserController_getUserInfo -> 토큰 값으로 유저 정보 조회");
         User user = userService.getUserFromRequest(request);
-        return new SingleResponseResult<>(UserResponseDto.fromEntity(user)); // ✅ DTO 변환
+        return new SingleResponseResult<>(UserResponseDto.of(user));
     }
 }
