@@ -33,7 +33,15 @@ public class User extends BaseTimeEntity {
     //총 점수
     @Column(nullable = false)
     private int userScore;
-    
+
+    public static User of(String email, String nickname) {
+        return User.builder()
+                .email(email)
+                .userNickname(nickname)
+                .userScore(0)
+                .build();
+    }
+
     public void updateUserScore(int score){
         this.userScore += score;
     }
