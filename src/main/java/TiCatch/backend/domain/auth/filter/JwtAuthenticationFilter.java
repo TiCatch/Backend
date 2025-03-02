@@ -32,15 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String requestURI = request.getRequestURI();
     String jwt = resolveToken(request);
 
-    log.info("요청 URI: {}", requestURI);
-    log.info("Authorization Header: {}", request.getHeader("Authorization"));
-    log.info("추출된 JWT 확인 : {}", jwt);
-
     boolean isReissueRequest = requestURI.equals("/api/auth/reissue");
 
-    if (StringUtils.hasText(jwt)) {
+    if (!StringUtils.hasText(jwt)) {
+      if (!isReissueRequest) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+    } else {
       boolean isValidToken = jwtProvider.validateToken(jwt, isReissueRequest);
-      log.info("JWT 검증 결과: {}", isValidToken);
 
       if (isValidToken) {
         Authentication authentication = jwtProvider.getAuthentication(jwt);
@@ -53,13 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error("만료된 토큰입니다.");
         throw new ExpiredTokenException();
       }
-    } else {
-      log.warn("JWT 없음: 인증 실패");
     }
 
     filterChain.doFilter(request, response);
   }
-
 
   private String resolveToken(HttpServletRequest request) {
     String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
@@ -70,5 +67,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     return null;
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    String requestURI = request.getRequestURI();
+
+    return requestURI.startsWith("/swagger-ui") ||
+            requestURI.startsWith("/v3/api-docs") ||
+            requestURI.startsWith("/webjars") ||
+            requestURI.startsWith("/static") ||
+            requestURI.equals("/favicon.ico") ||
+            requestURI.startsWith("/error");
   }
 }
