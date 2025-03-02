@@ -2,7 +2,7 @@ package TiCatch.backend.global.exception;
 
 public class JsonProcessException extends RuntimeException{
     public JsonProcessException() {
-        super(ExceptionCode.JSON_PROCESSING_EXCEPTION.getErrorMessage());
+        super(ExceptionCode.JSON_PROCESS_EXCEPTION.getErrorMessage());
     }
 
     public JsonProcessException(String message) {
