@@ -18,6 +18,12 @@ public class TicketingSeatService {
     public void processSeatReservation(Long ticketingId, int maxCount, Map<String, Integer> seatWeights, Runnable stopSchedulerCallback) {
         String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
 
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
+            log.info("취소된 티켓팅! 스케줄러 중지");
+            stopSchedulerCallback.run();
+            return;
+        }
+
         Map<Object, Object> seatStatusMap = redisTemplate.opsForHash().entries(redisKey);
         List<String> availableSeats = new ArrayList<>();
         for (var entry : seatStatusMap.entrySet()) {
