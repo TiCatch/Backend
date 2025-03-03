@@ -5,9 +5,10 @@ import TiCatch.backend.domain.ticketing.service.TicketingBatchProcessService;
 import TiCatch.backend.domain.ticketing.service.TicketingSeatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -62,9 +63,10 @@ public class DynamicScheduler {
 
     private static Map<String, Integer> loadSeatWeights() {
         try {
-            File file = new File(Objects.requireNonNull(
-                    DynamicScheduler.class.getClassLoader().getResource("seat_weights.json")).getFile());
-            return new ObjectMapper().readValue(file, new TypeReference<>() {});
+            InputStream inputStream = new ClassPathResource("seat_weights.json").getInputStream();
+            Map<String, Integer> weights = new ObjectMapper().readValue(inputStream, new TypeReference<>() {});
+            log.info("좌석별 가중치 데이터 파일 로드 성공 :  {} 개 좌석 ", weights.size());
+            return weights;
         } catch (Exception e) {
             log.error("좌석별 가중치 데이터 파일 로드 실패", e);
             return new HashMap<>();
