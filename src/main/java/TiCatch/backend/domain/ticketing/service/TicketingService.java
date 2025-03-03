@@ -205,6 +205,7 @@ public class TicketingService {
         }
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
+        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
 
