@@ -19,7 +19,10 @@ public enum ExceptionCode {
 	NOT_IN_PROGRESS_TICKET_EXCEPTION(442, "진행 중인 티켓팅이 아닙니다."),
 
 	// RESERVATION
-	ALREADY_RESERVED_EXCEPTION(450, "이미 선점된 좌석입니다.");
+	ALREADY_RESERVED_EXCEPTION(450, "이미 선점된 좌석입니다."),
+
+	// JSON
+	JSON_PROCESS_EXCEPTION(460, "JSON 데이터 처리 중 오류가 발생했습니다.");
 
 	private final int errorCode;
 	private final String errorMessage;
