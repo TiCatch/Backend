@@ -186,7 +186,6 @@ public class TicketingService {
                 );
     }
 
-    // 선택한 좌석이 예매 가능한지 확인
     public void isAvailable(Long ticketingId, String seatKey) {
         String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
@@ -204,6 +203,7 @@ public class TicketingService {
             throw new UnAuthorizedTicketAccessException();
         }
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
+        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
@@ -228,9 +228,7 @@ public class TicketingService {
         History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
         user.updateUserScore(ticketingScore);
 
-        // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());
-        log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingCompleteResponseDto.of(ticketing, history);
     }
