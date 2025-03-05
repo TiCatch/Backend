@@ -19,7 +19,7 @@ public class TicketingSeatService {
         String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
-            log.info("취소된 티켓팅! 스케줄러 중지");
+            log.info("취소된 티켓팅 : ticketingId {} ! 스케줄러 중지",ticketingId);
             stopSchedulerCallback.run();
             return;
         }
