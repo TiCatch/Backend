@@ -126,7 +126,6 @@ public class KakaoAuthService {
 		String email = (String)kakaoAccount.get("email");
 		String nickname = (String)kakaoProfile.get("nickname");
 
-		TokenDto tokenDto = jwtProvider.generateTokenDto(email);
 
 		return User.of(email, nickname);
 	}
