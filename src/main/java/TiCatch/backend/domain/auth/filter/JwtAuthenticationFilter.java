@@ -34,25 +34,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     boolean isReissueRequest = requestURI.equals("/api/auth/reissue");
 
-    if (!StringUtils.hasText(jwt)) {
-      if (!isReissueRequest) {
-        filterChain.doFilter(request, response);
-        return;
-      }
-    } else {
-      boolean isValidToken = jwtProvider.validateToken(jwt, isReissueRequest);
+    if (!StringUtils.hasText(jwt) && !isReissueRequest) {
+      filterChain.doFilter(request, response);
+      return;
+    }
 
-      if (isValidToken) {
-        Authentication authentication = jwtProvider.getAuthentication(jwt);
-        log.info("인증된 사용자: {}", authentication != null ? authentication.getName() : "인증 실패");
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.info("SecurityContextHolder 저장된 인증 정보: {}", SecurityContextHolder.getContext().getAuthentication());
-      } else if (isReissueRequest) {
-        log.info("만료된 토큰이지만, 재발급 요청이므로 필터 통과시키기");
-      } else {
-        log.error("만료된 토큰입니다.");
-        throw new ExpiredTokenException();
-      }
+    boolean isValidToken = jwtProvider.validateToken(jwt, isReissueRequest);
+
+    if (isValidToken) {
+      Authentication authentication = jwtProvider.getAuthentication(jwt);
+      log.info("인증된 사용자: {}", authentication != null ? authentication.getName() : "인증 실패");
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      log.info("SecurityContextHolder 저장된 인증 정보: {}", SecurityContextHolder.getContext().getAuthentication());
+    } else if (isReissueRequest) {
+      log.info("만료된 토큰이지만, 재발급 요청이므로 필터 통과시키기");
+    } else {
+      log.error("만료된 토큰입니다.");
+      throw new ExpiredTokenException();
     }
 
     filterChain.doFilter(request, response);
