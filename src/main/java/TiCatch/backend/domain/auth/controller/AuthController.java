@@ -20,7 +20,7 @@ public class AuthController {
 
     private final KakaoAuthService kakaoAuthService;
 
-    @PostMapping("/login/kakao")
+    @GetMapping("/login/kakao")
     public ResponseEntity<SingleResponseResult<UserResDto>> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
         LoginResponseDto loginResponseDto = kakaoAuthService.kakaoLogin(code, response);
         return ResponseEntity.ok(new SingleResponseResult<>(loginResponseDto.getUserResDto()));
