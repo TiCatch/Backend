@@ -32,6 +32,7 @@ public class RedisExpirationListener implements MessageListener {
             dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
         } else {
             ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
+            dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         }
     }
 }
