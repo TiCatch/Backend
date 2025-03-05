@@ -1,5 +1,6 @@
 package TiCatch.backend.domain.ticketing.service;
 
+import TiCatch.backend.global.exception.*;
 import TiCatch.backend.global.service.redis.RedisService;
 import TiCatch.backend.domain.history.entity.History;
 import TiCatch.backend.domain.history.repository.HistoryRepository;
@@ -13,10 +14,6 @@ import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.ticketing.repository.TicketingRepository;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.config.DynamicScheduler;
-import TiCatch.backend.global.exception.AlreadyReservedException;
-import TiCatch.backend.global.exception.NotExistTicketException;
-import TiCatch.backend.global.exception.NotInProgressTicketException;
-import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -111,6 +108,11 @@ public class TicketingService {
                 .subscribe();
 
         return Mono.just(responseDto);
+    }
+
+    public TicketingResponseDto getInProgressTicket(User user) {
+        Ticketing ticketing = ticketingRepository.findByUserAndTicketingStatus(user, TicketingStatus.IN_PROGRESS).orElseThrow(NotExistInProgressTicketException::new);
+        return TicketingResponseDto.of(ticketing);
     }
 
     private void addExpiryToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
