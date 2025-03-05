@@ -8,8 +8,11 @@ import TiCatch.backend.global.exception.NotExistTicketException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class RedisExpirationListener implements MessageListener {
 
     private final DynamicScheduler dynamicScheduler;
     private final TicketingRepository ticketingRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -33,6 +37,7 @@ public class RedisExpirationListener implements MessageListener {
         } else {
             ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
             dynamicScheduler.stopScheduler(ticketing.getTicketingId());
+            redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         }
     }
 }
