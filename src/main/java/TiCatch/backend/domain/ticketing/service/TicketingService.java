@@ -32,11 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
 
 import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
-import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
@@ -110,8 +110,8 @@ public class TicketingService {
         return Mono.just(responseDto);
     }
 
-    public TicketingResponseDto getInProgressTicket(User user) {
-        Ticketing ticketing = ticketingRepository.findByUserAndTicketingStatus(user, TicketingStatus.IN_PROGRESS).orElseThrow(NotExistInProgressTicketException::new);
+    public TicketingResponseDto getInProgressOrWaitingTicket(User user) {
+        Ticketing ticketing = ticketingRepository.findByUserAndTicketingStatusIn(user, List.of(TicketingStatus.IN_PROGRESS, TicketingStatus.WAITING)).orElseThrow(NotExistInProgressTicketException::new);
         return TicketingResponseDto.of(ticketing);
     }
 

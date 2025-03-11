@@ -6,9 +6,10 @@ import TiCatch.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface TicketingRepository extends JpaRepository<Ticketing, Long> {
-    Optional<Ticketing> findByUserAndTicketingStatus(User user, TicketingStatus ticketingStatus);
+    Optional<Ticketing> findByUserAndTicketingStatusIn(User user, List<TicketingStatus> ticketingStatus);
 }
