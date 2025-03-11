@@ -40,7 +40,7 @@ public class TicketingController {
     @GetMapping("/in-progress")
     public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getInProgressTicket(HttpServletRequest request) {
         User user = userService.getUserFromRequest(request);
-        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getInProgressTicket(user)));
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getInProgressOrWaitingTicket(user)));
     }
 
     @GetMapping("/{ticketingId}")
