@@ -19,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.filter.CorsFilter;
 
+import static TiCatch.backend.global.constant.UserConstants.*;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -40,18 +42,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers("/static/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/webjars/**").permitAll()
-                        .requestMatchers("/api/auth/login/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .requestMatchers("/api/auth/reissue").permitAll()
-                        .requestMatchers("/api/auth/logout").permitAll()
-                        .requestMatchers("/auth").permitAll()
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/ticket/waiting/**").permitAll()
-                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(STATIC+ "/**").permitAll()
+                        .requestMatchers(SWAGGER+"/**").permitAll()
+                        .requestMatchers(API_DOCS+"/**").permitAll()
+                        .requestMatchers(WEBJARS+"/**").permitAll()
+                        .requestMatchers(LOGIN).permitAll()
+                        .requestMatchers(OAUTH2).permitAll()
+                        .requestMatchers(REISSUE_REQUEST).permitAll()
+                        .requestMatchers(LOGOUT).permitAll()
+                        .requestMatchers(AUTH).permitAll()
+                        .requestMatchers(ROOT).permitAll()
+                        .requestMatchers(WAITING).permitAll()
+                        .requestMatchers(ERROR).permitAll()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
@@ -62,10 +64,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization
-                                .baseUri("/oauth2/authorization")
+                                .baseUri(OAUTH2_AUTHORIZATION)
                         )
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/login/oauth2/code/*")
+                                .baseUri(OAUTH2_REDIRECTION)
                         )
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

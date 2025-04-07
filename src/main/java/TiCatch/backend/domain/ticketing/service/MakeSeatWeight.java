@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import static TiCatch.backend.global.constant.TicketingConstants.*;
+
 @Component
 @RequiredArgsConstructor
 public class MakeSeatWeight {
@@ -23,13 +25,13 @@ public class MakeSeatWeight {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
 
-            InputStream weightStream = new ClassPathResource("seat_weights.json").getInputStream();
+            InputStream weightStream = new ClassPathResource(SEAT_WEIGHTS_FILE_NAME).getInputStream();
             Map<String, Integer> seatWeights = objectMapper.readValue(weightStream, new TypeReference<>() {});
 
             for (Map.Entry<String, Integer> entry : seatWeights.entrySet()) {
                 String seatKey = entry.getKey();
                 int weight = entry.getValue();
-                redisTemplate.opsForHash().put("seat_score", seatKey, String.valueOf(weight));
+                redisTemplate.opsForHash().put(SEAT_SCORE_FILE_NAME, seatKey, String.valueOf(weight));
             }
 
             System.out.println("Redis에 좌석 가중치 저장 완료!");

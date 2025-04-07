@@ -37,6 +37,7 @@ import java.util.Map;
 import java.time.LocalDateTime;
 
 import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
+import static TiCatch.backend.global.constant.TicketingConstants.*;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
@@ -69,7 +70,7 @@ public class TicketingService {
     public void loadSectionInfo() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            InputStream inputStream = new ClassPathResource("section_info.json").getInputStream();
+            InputStream inputStream = new ClassPathResource(SECTION_INFO_FILE_NAME).getInputStream();
             SECTION_INFORMATION = objectMapper.readValue(inputStream, new TypeReference<Map<String, Map<Integer, Integer>>>() {});
         } catch (IOException e) {
             throw new RuntimeException("좌석을 불러오는 데 실패했습니다.", e);
@@ -99,7 +100,7 @@ public class TicketingService {
                                 int cols = rowEntry.getValue();
 
                                 return Flux.range(1, cols).map(seat -> {
-                                    String seatKey = section + ":R" + row + ":C" + seat;
+                                    String seatKey = section + ROW + row + COL + seat;
                                     return Map.entry(seatKey, "0");
                                 });
                             });
@@ -216,13 +217,13 @@ public class TicketingService {
         Ticketing ticketing = ticketingRepository.findById(completeTicketingDto.getTicketingId())
                 .orElseThrow(NotExistTicketException::new);
 
-        Object seatScore = redisTemplate.opsForHash().get("seat_score", completeTicketingDto.getSeatInfo());
+        Object seatScore = redisTemplate.opsForHash().get(SEAT_SCORE_FILE_NAME, completeTicketingDto.getSeatInfo());
 
-        double levelScore = 1;
+        double levelScore = LEVEL_SCORE_DEFAULT;
         if(ticketing.getTicketingLevel() == NORMAL){
-            levelScore = 1.5;
+            levelScore = LEVEL_SCORE_NORMAL;
         }else if(ticketing.getTicketingLevel() == HARD){
-            levelScore = 1.8;
+            levelScore = LEVEL_SCORE_HARD;
         }
         int ticketingScore = (int)(levelScore * Integer.parseInt(seatScore.toString()));
 

@@ -7,6 +7,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import static TiCatch.backend.global.constant.UserConstants.*;
+
 @Configuration
 public class CorsConfig {
 
@@ -29,9 +31,9 @@ public class CorsConfig {
         config.addAllowedOriginPattern(vercelOrigin);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-        config.addExposedHeader("Authorization");
-        config.addExposedHeader("accessToken");
-        config.addExposedHeader("refreshToken");
+        config.addExposedHeader(HEADER_AUTHORIZATION);
+        config.addExposedHeader(HEADER_ACCESS_TOKEN);
+        config.addExposedHeader(HEADER_REFRESH_TOKEN);
 
         source.registerCorsConfiguration("/**", config);
 

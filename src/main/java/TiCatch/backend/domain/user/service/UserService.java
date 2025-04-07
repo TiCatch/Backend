@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import TiCatch.backend.global.exception.NotExistUserException;
+import static TiCatch.backend.global.constant.UserConstants.*;
 
 @Slf4j
 @Service
@@ -31,8 +32,8 @@ public class UserService {
     public User getUserFromRequest(HttpServletRequest request) {
         log.info("UserService_getUserFromRequest -> 토큰 값으로 유저 정보 조회");
 
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
             throw new NotExistUserException(); // 예외 처리
         }
 
