@@ -2,7 +2,6 @@ package TiCatch.backend.domain.auth.util;
 
 import TiCatch.backend.domain.auth.dto.TokenDto;
 import TiCatch.backend.domain.auth.dto.UserDto;
-import TiCatch.backend.domain.user.entity.CredentialRole;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -11,18 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import TiCatch.backend.global.exception.WrongTokenException;
 import TiCatch.backend.global.exception.ExpiredTokenException;
 
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -48,7 +42,6 @@ public class JwtProvider {
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
                 .setSubject(email)
-                .claim(AUTHORITIES_KEY, CredentialRole.USER)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -69,21 +62,13 @@ public class JwtProvider {
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
         String email = claims.getSubject();
-        if (claims.get(AUTHORITIES_KEY) == null) {
+        if (email == null || email.isEmpty()) {
             throw new UnAuthorizedAccessException();
         }
-
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
         UserDto userDto = UserDto.builder()
                 .email(email)
-                .authorities(authorities)
                 .build();
-
-        return new UsernamePasswordAuthenticationToken(userDto, accessToken, authorities);
+        return new UsernamePasswordAuthenticationToken(userDto, accessToken, null);
     }
 
     public boolean validateToken(String token, boolean isReissueRequest) {
