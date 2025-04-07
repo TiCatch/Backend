@@ -1,7 +1,6 @@
 package TiCatch.backend.domain.payment.controller;
 
 import TiCatch.backend.domain.payment.service.PaymentService;
-import TiCatch.backend.domain.payment.util.SessionUtils;
 import TiCatch.backend.domain.payment.dto.ApproveRequest;
 import TiCatch.backend.domain.payment.dto.ApproveResponse;
 import TiCatch.backend.domain.payment.dto.ReadyResponse;
@@ -21,17 +20,14 @@ public class PaymentController {
     public ResponseEntity<SingleResponseResult<ReadyResponse>> payReady(@RequestBody ApproveRequest approveRequest){
         String name = approveRequest.getName();
         int totalPrice = approveRequest.getTotalPrice();
-
         ReadyResponse readyResponse = paymentService.ready(name,totalPrice);
 
-        SessionUtils.addAttribute("tid", readyResponse.getTid());
         return ResponseEntity.ok(new SingleResponseResult<>(readyResponse));
     }
 
 
     @GetMapping("/complete")
-    public ResponseEntity<SingleResponseResult<ApproveResponse>> payCompleted(@RequestParam("pg_token") String pgToken){
-        String tid = SessionUtils.getStringAttributeValue("tid");
+    public ResponseEntity<SingleResponseResult<ApproveResponse>> payCompleted(@RequestParam("tid") String tid, @RequestParam("pg_token") String pgToken){
         ApproveResponse approveResponse = paymentService.payApprove(tid, pgToken);
 
         return ResponseEntity.ok(new SingleResponseResult<>(approveResponse));

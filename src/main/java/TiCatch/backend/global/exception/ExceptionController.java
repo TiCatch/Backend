@@ -86,4 +86,9 @@ public class ExceptionController {
         log.info("Error Message : {}", err.getMessage());
         return ResponseResult.exceptionResponse(ExceptionCode.JSON_PROCESS_EXCEPTION, err.getMessage());
     }
+  
+    @ExceptionHandler(NotExistInProgressTicketException.class)
+    public ResponseResult NotExistInProgressTicketException(NotExistInProgressTicketException err) {
+        return ResponseResult.exceptionResponse(ExceptionCode.NOT_EXIST_IN_PROGRESS_TICKET_EXCEPTION, err.getMessage());
+    }
 }

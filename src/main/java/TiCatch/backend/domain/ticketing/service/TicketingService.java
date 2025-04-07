@@ -1,5 +1,6 @@
 package TiCatch.backend.domain.ticketing.service;
 
+import TiCatch.backend.global.exception.*;
 import TiCatch.backend.global.service.redis.RedisService;
 import TiCatch.backend.domain.history.entity.History;
 import TiCatch.backend.domain.history.repository.HistoryRepository;
@@ -13,10 +14,6 @@ import TiCatch.backend.domain.ticketing.entity.TicketingStatus;
 import TiCatch.backend.domain.ticketing.repository.TicketingRepository;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.global.config.DynamicScheduler;
-import TiCatch.backend.global.exception.AlreadyReservedException;
-import TiCatch.backend.global.exception.NotExistTicketException;
-import TiCatch.backend.global.exception.NotInProgressTicketException;
-import TiCatch.backend.global.exception.UnAuthorizedTicketAccessException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -35,11 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
 
 import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
-import static TiCatch.backend.global.constant.SchedulerConstants.TICKETING_SCHEDULER_PERIOD;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USERTYPE;
 import static TiCatch.backend.global.constant.UserConstants.VIRTUAL_USER_ID;
 import static TiCatch.backend.global.constant.RedisConstants.TICKETING_SEAT_PREFIX;
@@ -111,6 +108,11 @@ public class TicketingService {
                 .subscribe();
 
         return Mono.just(responseDto);
+    }
+
+    public TicketingResponseDto getInProgressOrWaitingTicket(User user) {
+        Ticketing ticketing = ticketingRepository.findByUserAndTicketingStatusIn(user, List.of(TicketingStatus.IN_PROGRESS, TicketingStatus.WAITING)).orElseThrow(NotExistInProgressTicketException::new);
+        return TicketingResponseDto.of(ticketing);
     }
 
     private void addExpiryToControlQueue(Long ticketingId, LocalDateTime ticketingTime) {
@@ -186,7 +188,6 @@ public class TicketingService {
                 );
     }
 
-    // 선택한 좌석이 예매 가능한지 확인
     public void isAvailable(Long ticketingId, String seatKey) {
         String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
@@ -203,7 +204,9 @@ public class TicketingService {
         if(!ticketing.getUser().getUserId().equals(user.getUserId())) {
             throw new UnAuthorizedTicketAccessException();
         }
+        log.info("ticketingId : {} 티켓팅을 취소했습니다. ",ticketingId);
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
+        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
@@ -226,10 +229,8 @@ public class TicketingService {
         ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
         History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
         user.updateUserScore(ticketingScore);
-
-        // 티켓팅 완료 시, 좌석 예약 알고리즘 멈춤
+        log.info("ticketingId : {} 티켓팅이 종료했습니다. ",ticketing.getTicketingId());
         dynamicScheduler.stopScheduler(ticketing.getTicketingId());
-        log.info("@@@ 좌석 예약 알고리즘 중지: Ticketing ID={}", ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingCompleteResponseDto.of(ticketing, history);
     }

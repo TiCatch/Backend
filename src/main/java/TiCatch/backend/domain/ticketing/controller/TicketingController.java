@@ -37,6 +37,12 @@ public class TicketingController {
                 .map(ticket -> ResponseEntity.ok(new SingleResponseResult<>(ticket)));
     }
 
+    @GetMapping("/in-progress")
+    public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getInProgressTicket(HttpServletRequest request) {
+        User user = userService.getUserFromRequest(request);
+        return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.getInProgressOrWaitingTicket(user)));
+    }
+
     @GetMapping("/{ticketingId}")
     public ResponseEntity<SingleResponseResult<TicketingResponseDto>> getTicket(HttpServletRequest request, @PathVariable("ticketingId") Long ticketingId) {
         User user = userService.getUserFromRequest(request);
