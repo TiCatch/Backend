@@ -7,17 +7,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
+import static TiCatch.backend.global.constant.UserConstants.*;
+
 @Slf4j
 @Component
 public class HeaderUtil {
     public HttpHeaders setTokenHeaders(TokenDto tokenDto, HttpServletResponse response) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("access-token", tokenDto.getAccessToken());
-        Cookie refreshTokenCookie = new Cookie("refresh-token", tokenDto.getRefreshToken());
+        headers.add(ACCESS_TOKEN, tokenDto.getAccessToken());
+        Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN, tokenDto.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
+        refreshTokenCookie.setMaxAge(REFRESH_TOKEN_MAX_AGE);
         response.addCookie(refreshTokenCookie);
 
         return headers;

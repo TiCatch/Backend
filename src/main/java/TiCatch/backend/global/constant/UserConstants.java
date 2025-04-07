@@ -12,6 +12,8 @@ public class UserConstants {
     public static final String ACCESS_TOKEN = "access-token";
     public static final String REFRESH_TOKEN = "refresh-token";
     public static final int REFRESH_TOKEN_MAX_AGE = (7 * 24 * 60 * 60);
+    public static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 40L;
+    public static final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 24L * 7L;
     public static final String REISSUE_REQUEST = "/api/auth/reissue";
     public static final String SWAGGER = "/swagger-ui";
     public static final String API_DOCS = "/v3/api-docs";
