@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.filter;
+package TiCatch.backend.global.filter;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import TiCatch.backend.domain.auth.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.TokenDto;
 
 import java.io.IOException;
 

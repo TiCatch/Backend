@@ -1,6 +1,6 @@
 package TiCatch.backend.domain.user.service;
 
-import TiCatch.backend.domain.auth.util.JwtProvider;
+import TiCatch.backend.global.util.JwtProvider;
 import TiCatch.backend.domain.user.dto.response.UserResponseDto;
 import TiCatch.backend.domain.user.entity.User;
 import TiCatch.backend.domain.user.repository.UserRepository;

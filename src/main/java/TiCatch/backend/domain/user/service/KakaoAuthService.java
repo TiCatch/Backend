@@ -1,11 +1,11 @@
-package TiCatch.backend.domain.auth.service;
+package TiCatch.backend.domain.user.service;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.kakao.KakaoAccountDto;
-import TiCatch.backend.domain.auth.dto.kakao.KakaoTokenDto;
-import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
-import TiCatch.backend.domain.auth.dto.response.UserResDto;
-import TiCatch.backend.domain.auth.util.JwtProvider;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.kakao.KakaoAccountDto;
+import TiCatch.backend.domain.user.dto.kakao.KakaoTokenDto;
+import TiCatch.backend.domain.user.dto.response.LoginResponseDto;
+import TiCatch.backend.domain.user.dto.response.UserResDto;
+import TiCatch.backend.global.util.JwtProvider;
 import TiCatch.backend.domain.user.repository.UserRepository;
 import TiCatch.backend.global.exception.JsonProcessException;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;

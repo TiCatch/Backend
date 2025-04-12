@@ -1,6 +1,6 @@
-package TiCatch.backend.domain.auth.filter;
+package TiCatch.backend.global.filter;
 
-import TiCatch.backend.domain.auth.util.JwtProvider;
+import TiCatch.backend.global.util.JwtProvider;
 import TiCatch.backend.global.exception.ExpiredTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

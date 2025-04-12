@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.dto.kakao;
+package TiCatch.backend.domain.user.dto.kakao;
 
 import lombok.Getter;
 

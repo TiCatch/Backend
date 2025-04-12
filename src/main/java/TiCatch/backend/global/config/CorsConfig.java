@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.config;
+package TiCatch.backend.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

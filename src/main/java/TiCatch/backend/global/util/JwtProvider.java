@@ -1,7 +1,7 @@
-package TiCatch.backend.domain.auth.util;
+package TiCatch.backend.global.util;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.UserDto;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.UserDto;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

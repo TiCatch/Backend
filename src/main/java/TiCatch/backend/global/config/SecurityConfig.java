@@ -1,8 +1,8 @@
-package TiCatch.backend.domain.auth.config;
+package TiCatch.backend.global.config;
 
-import TiCatch.backend.domain.auth.filter.JwtAuthenticationFilter;
-import TiCatch.backend.domain.auth.handler.CustomAccessDeniedHandler;
-import TiCatch.backend.domain.auth.handler.CustomAuthenticationEntryPoint;
+import TiCatch.backend.global.filter.JwtAuthenticationFilter;
+import TiCatch.backend.global.handler.CustomAccessDeniedHandler;
+import TiCatch.backend.global.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
