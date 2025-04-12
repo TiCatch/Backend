@@ -100,7 +100,7 @@ public class KakaoAuthService {
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + kakaoTokenDto.getAccessToken());
+		headers.add(HEADER_AUTHORIZATION, BEARER_PREFIX + kakaoTokenDto.getAccessToken());
 
 		HttpEntity<MultiValueMap<String, String>> accountInfoRequest = new HttpEntity<>(headers);
 

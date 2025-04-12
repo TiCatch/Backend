@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.filter.CorsFilter;
 
-import static TiCatch.backend.global.constant.UserConstants.*;
+import static TiCatch.backend.global.constant.PathConstants.*;
 
 @Slf4j
 @Configuration
@@ -42,18 +42,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers(STATIC+ "/**").permitAll()
-                        .requestMatchers(SWAGGER+"/**").permitAll()
-                        .requestMatchers(API_DOCS+"/**").permitAll()
-                        .requestMatchers(WEBJARS+"/**").permitAll()
-                        .requestMatchers(LOGIN).permitAll()
-                        .requestMatchers(OAUTH2).permitAll()
-                        .requestMatchers(REISSUE_REQUEST).permitAll()
-                        .requestMatchers(LOGOUT).permitAll()
-                        .requestMatchers(AUTH).permitAll()
-                        .requestMatchers(ROOT).permitAll()
-                        .requestMatchers(WAITING).permitAll()
-                        .requestMatchers(ERROR).permitAll()
+                        .requestMatchers(STATIC_PATH+ "/**").permitAll()
+                        .requestMatchers(SWAGGER_UI_PATH+"/**").permitAll()
+                        .requestMatchers(API_DOCS_PATH+"/**").permitAll()
+                        .requestMatchers(WEBJARS_PATH+"/**").permitAll()
+                        .requestMatchers(LOGIN_PATH).permitAll()
+                        .requestMatchers(OAUTH2_PATH).permitAll()
+                        .requestMatchers(REISSUE_REQUEST_PATH).permitAll()
+                        .requestMatchers(LOGOUT_PATH).permitAll()
+                        .requestMatchers(AUTH_PATH).permitAll()
+                        .requestMatchers(ROOT_PATH).permitAll()
+                        .requestMatchers(WAITING_PATH).permitAll()
+                        .requestMatchers(ERROR_PATH).permitAll()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
                 .securityContextRepository(new HttpSessionSecurityContextRepository())

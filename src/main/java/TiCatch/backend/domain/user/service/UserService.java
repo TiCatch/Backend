@@ -32,7 +32,7 @@ public class UserService {
     public User getUserFromRequest(HttpServletRequest request) {
         log.info("UserService_getUserFromRequest -> 토큰 값으로 유저 정보 조회");
 
-        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
             throw new NotExistUserException(); // 예외 처리
         }

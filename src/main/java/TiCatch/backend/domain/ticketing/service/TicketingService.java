@@ -218,7 +218,6 @@ public class TicketingService {
                 .orElseThrow(NotExistTicketException::new);
 
         Object seatScore = redisTemplate.opsForHash().get(SEAT_SCORE_FILE_NAME, completeTicketingDto.getSeatInfo());
-
         double levelScore = LEVEL_SCORE_DEFAULT;
         if(ticketing.getTicketingLevel() == NORMAL){
             levelScore = LEVEL_SCORE_NORMAL;

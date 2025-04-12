@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import static TiCatch.backend.global.constant.PathConstants.*;
 import static TiCatch.backend.global.constant.UserConstants.*;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String requestURI = request.getRequestURI();
     String jwt = resolveToken(request);
 
-    boolean isReissueRequest = requestURI.equals(REISSUE_REQUEST);
+    boolean isReissueRequest = requestURI.equals(REISSUE_REQUEST_PATH);
 
     if (!StringUtils.hasText(jwt) && !isReissueRequest) {
       filterChain.doFilter(request, response);
@@ -56,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private String resolveToken(HttpServletRequest request) {
-    String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+    String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
     log.info("Authorization Header: {}", bearerToken);
 
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
@@ -70,11 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String requestURI = request.getRequestURI();
 
-    return requestURI.startsWith(SWAGGER) ||
-            requestURI.startsWith(API_DOCS) ||
-            requestURI.startsWith(WEBJARS) ||
-            requestURI.startsWith(STATIC) ||
-            requestURI.equals(FAVICON) ||
-            requestURI.startsWith(ERROR);
+    return requestURI.startsWith(SWAGGER_UI_PATH) ||
+            requestURI.startsWith(API_DOCS_PATH) ||
+            requestURI.startsWith(WEBJARS_PATH) ||
+            requestURI.startsWith(STATIC_PATH) ||
+            requestURI.equals(FAVICON_PATH) ||
+            requestURI.startsWith(ERROR_PATH);
   }
 }
