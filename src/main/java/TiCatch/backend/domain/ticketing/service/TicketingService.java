@@ -207,7 +207,7 @@ public class TicketingService {
         }
         log.info("ticketingId : {} 티켓팅을 취소했습니다. ",ticketingId);
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
-        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
+        dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
@@ -230,7 +230,7 @@ public class TicketingService {
         History history = historyRepository.save(History.of(completeTicketingDto, user, ticketing,ticketingScore));
         user.updateUserScore(ticketingScore);
         log.info("ticketingId : {} 티켓팅이 종료했습니다. ",ticketing.getTicketingId());
-        dynamicScheduler.stopScheduler(ticketing.getTicketingId());
+        dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingCompleteResponseDto.of(ticketing, history);
     }

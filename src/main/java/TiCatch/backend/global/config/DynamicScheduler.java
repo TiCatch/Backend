@@ -61,6 +61,14 @@ public class DynamicScheduler {
         }
     }
 
+    public void stopNowScheduler(Long ticketingId) {
+        ScheduledExecutorService scheduler = schedulerMap.get(ticketingId);
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+            schedulerMap.remove(ticketingId);
+        }
+    }
+
     private static Map<String, Integer> loadSeatWeights() {
         try {
             InputStream inputStream = new ClassPathResource("seat_weights.json").getInputStream();
@@ -83,7 +91,7 @@ public class DynamicScheduler {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(() -> {
             ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
-                    () -> stopScheduler(ticketingId));
+                    () -> stopNowScheduler(ticketingId));
         }, 0, 1, TimeUnit.SECONDS);
 
         schedulerMap.put(ticketingId, scheduler);
