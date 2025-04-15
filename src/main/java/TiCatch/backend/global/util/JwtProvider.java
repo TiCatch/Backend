@@ -1,7 +1,7 @@
-package TiCatch.backend.domain.auth.util;
+package TiCatch.backend.global.util;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.UserDto;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.UserDto;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -13,7 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import TiCatch.backend.global.exception.WrongTokenException;
 import TiCatch.backend.global.exception.ExpiredTokenException;
-
+import static TiCatch.backend.global.constant.UserConstants.*;
 
 import java.security.Key;
 import java.util.Date;
@@ -23,13 +23,10 @@ import java.util.Date;
 public class JwtProvider {
 
     private final Key key;
-    private final String AUTHORITIES_KEY = "auth";
     @Value("${jwt.bearer.type}")
     private String BEARER_TYPE;
     @Value("${jwt.bearer.prefix}")
     private String BEARER_PREFIX;
-    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 40L;  //40분
-    private final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 24L * 7L; //7일
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);

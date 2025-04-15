@@ -1,11 +1,11 @@
-package TiCatch.backend.domain.auth.service;
+package TiCatch.backend.domain.user.service;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.kakao.KakaoAccountDto;
-import TiCatch.backend.domain.auth.dto.kakao.KakaoTokenDto;
-import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
-import TiCatch.backend.domain.auth.dto.response.UserResDto;
-import TiCatch.backend.domain.auth.util.JwtProvider;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.kakao.KakaoAccountDto;
+import TiCatch.backend.domain.user.dto.kakao.KakaoTokenDto;
+import TiCatch.backend.domain.user.dto.response.LoginResponseDto;
+import TiCatch.backend.domain.user.dto.response.UserResDto;
+import TiCatch.backend.global.util.JwtProvider;
 import TiCatch.backend.domain.user.repository.UserRepository;
 import TiCatch.backend.global.exception.JsonProcessException;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
@@ -29,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 import TiCatch.backend.domain.user.entity.User;
 
 import java.util.Map;
+
+import static TiCatch.backend.global.constant.UserConstants.*;
 
 @Slf4j
 @Service
@@ -98,7 +100,7 @@ public class KakaoAuthService {
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", "Bearer " + kakaoTokenDto.getAccessToken());
+		headers.add(HEADER_AUTHORIZATION, BEARER_PREFIX + kakaoTokenDto.getAccessToken());
 
 		HttpEntity<MultiValueMap<String, String>> accountInfoRequest = new HttpEntity<>(headers);
 
@@ -140,7 +142,7 @@ public class KakaoAuthService {
 			throw new UnAuthorizedAccessException();
 		}
 		TokenDto newTokenDto = jwtProvider.generateTokenDto(email);
-		response.setHeader("access-token", newTokenDto.getAccessToken());
+		response.setHeader(ACCESS_TOKEN, newTokenDto.getAccessToken());
 		return newTokenDto;
 	}
 
@@ -148,7 +150,7 @@ public class KakaoAuthService {
 		if (refreshToken != null) {
 			redisService.deleteValues(refreshToken);
 		}
-		Cookie refreshTokenCookie = new Cookie("refresh-token", null);
+		Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN, null);
 		refreshTokenCookie.setHttpOnly(true);
 		refreshTokenCookie.setPath("/");
 		refreshTokenCookie.setMaxAge(0);
@@ -162,15 +164,15 @@ public class KakaoAuthService {
 	}
 
 	private void addTokenToResponse(HttpServletResponse response, TokenDto tokenDto) {
-		response.setHeader("access-token", tokenDto.getAccessToken());
+		response.setHeader(ACCESS_TOKEN, tokenDto.getAccessToken());
 		addRefreshTokenCookie(response, tokenDto.getRefreshToken());
 	}
 
 	private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-		Cookie refreshTokenCookie = new Cookie("refresh-token", refreshToken);
+		Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN, refreshToken);
 		refreshTokenCookie.setHttpOnly(true);
 		refreshTokenCookie.setPath("/");
-		refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+		refreshTokenCookie.setMaxAge(REFRESH_TOKEN_MAX_AGE);
 		response.addCookie(refreshTokenCookie);
 	}
 }

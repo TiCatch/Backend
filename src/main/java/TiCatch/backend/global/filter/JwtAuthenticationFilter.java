@@ -1,6 +1,6 @@
-package TiCatch.backend.domain.auth.filter;
+package TiCatch.backend.global.filter;
 
-import TiCatch.backend.domain.auth.util.JwtProvider;
+import TiCatch.backend.global.util.JwtProvider;
 import TiCatch.backend.global.exception.ExpiredTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import static TiCatch.backend.global.constant.PathConstants.*;
+import static TiCatch.backend.global.constant.UserConstants.*;
 
 import java.io.IOException;
 
@@ -21,8 +23,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private static final String AUTHORIZATION_HEADER = "Authorization";
-  private static final String BEARER_PREFIX = "Bearer ";
   private final JwtProvider jwtProvider;
 
   @Override
@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String requestURI = request.getRequestURI();
     String jwt = resolveToken(request);
 
-    boolean isReissueRequest = requestURI.equals("/api/auth/reissue");
+    boolean isReissueRequest = requestURI.equals(REISSUE_REQUEST_PATH);
 
     if (!StringUtils.hasText(jwt) && !isReissueRequest) {
       filterChain.doFilter(request, response);
@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private String resolveToken(HttpServletRequest request) {
-    String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+    String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
     log.info("Authorization Header: {}", bearerToken);
 
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
@@ -71,11 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String requestURI = request.getRequestURI();
 
-    return requestURI.startsWith("/swagger-ui") ||
-            requestURI.startsWith("/v3/api-docs") ||
-            requestURI.startsWith("/webjars") ||
-            requestURI.startsWith("/static") ||
-            requestURI.equals("/favicon.ico") ||
-            requestURI.startsWith("/error");
+    return requestURI.startsWith(SWAGGER_UI_PATH) ||
+            requestURI.startsWith(API_DOCS_PATH) ||
+            requestURI.startsWith(WEBJARS_PATH) ||
+            requestURI.startsWith(STATIC_PATH) ||
+            requestURI.equals(FAVICON_PATH) ||
+            requestURI.startsWith(ERROR_PATH);
   }
 }

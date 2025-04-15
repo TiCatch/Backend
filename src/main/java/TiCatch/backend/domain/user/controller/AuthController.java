@@ -1,9 +1,9 @@
-package TiCatch.backend.domain.auth.controller;
+package TiCatch.backend.domain.user.controller;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.response.LoginResponseDto;
-import TiCatch.backend.domain.auth.dto.response.UserResDto;
-import TiCatch.backend.domain.auth.service.KakaoAuthService;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.response.LoginResponseDto;
+import TiCatch.backend.domain.user.dto.response.UserResDto;
+import TiCatch.backend.domain.user.service.KakaoAuthService;
 import TiCatch.backend.global.response.SingleResponseResult;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

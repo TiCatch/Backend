@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.handler;
+package TiCatch.backend.global.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
