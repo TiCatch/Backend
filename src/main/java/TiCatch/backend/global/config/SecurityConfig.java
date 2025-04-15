@@ -1,8 +1,8 @@
-package TiCatch.backend.domain.auth.config;
+package TiCatch.backend.global.config;
 
-import TiCatch.backend.domain.auth.filter.JwtAuthenticationFilter;
-import TiCatch.backend.domain.auth.handler.CustomAccessDeniedHandler;
-import TiCatch.backend.domain.auth.handler.CustomAuthenticationEntryPoint;
+import TiCatch.backend.global.filter.JwtAuthenticationFilter;
+import TiCatch.backend.global.handler.CustomAccessDeniedHandler;
+import TiCatch.backend.global.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.filter.CorsFilter;
+
+import static TiCatch.backend.global.constant.PathConstants.*;
 
 @Slf4j
 @Configuration
@@ -40,18 +42,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers("/static/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/webjars/**").permitAll()
-                        .requestMatchers("/api/auth/login/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .requestMatchers("/api/auth/reissue").permitAll()
-                        .requestMatchers("/api/auth/logout").permitAll()
-                        .requestMatchers("/auth").permitAll()
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/ticket/waiting/**").permitAll()
-                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(STATIC_PATH+ "/**").permitAll()
+                        .requestMatchers(SWAGGER_UI_PATH+"/**").permitAll()
+                        .requestMatchers(API_DOCS_PATH+"/**").permitAll()
+                        .requestMatchers(WEBJARS_PATH+"/**").permitAll()
+                        .requestMatchers(LOGIN_PATH).permitAll()
+                        .requestMatchers(OAUTH2_PATH).permitAll()
+                        .requestMatchers(REISSUE_REQUEST_PATH).permitAll()
+                        .requestMatchers(LOGOUT_PATH).permitAll()
+                        .requestMatchers(AUTH_PATH).permitAll()
+                        .requestMatchers(ROOT_PATH).permitAll()
+                        .requestMatchers(WAITING_PATH).permitAll()
+                        .requestMatchers(ERROR_PATH).permitAll()
                         .anyRequest().authenticated()
                 ).securityContext(securityContext -> securityContext
                 .securityContextRepository(new HttpSessionSecurityContextRepository())
@@ -62,10 +64,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization
-                                .baseUri("/oauth2/authorization")
+                                .baseUri(OAUTH2_AUTHORIZATION)
                         )
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/login/oauth2/code/*")
+                                .baseUri(OAUTH2_REDIRECTION)
                         )
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.dto;
+package TiCatch.backend.domain.user.dto;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package TiCatch.backend.domain.auth.dto.kakao;
+package TiCatch.backend.domain.user.dto.kakao;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

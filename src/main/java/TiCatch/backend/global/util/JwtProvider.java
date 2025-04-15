@@ -1,8 +1,7 @@
-package TiCatch.backend.domain.auth.util;
+package TiCatch.backend.global.util;
 
-import TiCatch.backend.domain.auth.dto.TokenDto;
-import TiCatch.backend.domain.auth.dto.UserDto;
-import TiCatch.backend.domain.user.entity.CredentialRole;
+import TiCatch.backend.domain.user.dto.TokenDto;
+import TiCatch.backend.domain.user.dto.UserDto;
 import TiCatch.backend.global.exception.UnAuthorizedAccessException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -11,31 +10,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import TiCatch.backend.global.exception.WrongTokenException;
 import TiCatch.backend.global.exception.ExpiredTokenException;
-
+import static TiCatch.backend.global.constant.UserConstants.*;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class JwtProvider {
 
     private final Key key;
-    private final String AUTHORITIES_KEY = "auth";
     @Value("${jwt.bearer.type}")
     private String BEARER_TYPE;
     @Value("${jwt.bearer.prefix}")
     private String BEARER_PREFIX;
-    private final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60L * 40L;  //40분
-    private final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60L * 60L * 24L * 7L; //7일
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -48,7 +39,6 @@ public class JwtProvider {
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
                 .setSubject(email)
-                .claim(AUTHORITIES_KEY, CredentialRole.USER)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -69,21 +59,13 @@ public class JwtProvider {
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
         String email = claims.getSubject();
-        if (claims.get(AUTHORITIES_KEY) == null) {
+        if (email == null || email.isEmpty()) {
             throw new UnAuthorizedAccessException();
         }
-
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
         UserDto userDto = UserDto.builder()
                 .email(email)
-                .authorities(authorities)
                 .build();
-
-        return new UsernamePasswordAuthenticationToken(userDto, accessToken, authorities);
+        return new UsernamePasswordAuthenticationToken(userDto, accessToken, null);
     }
 
     public boolean validateToken(String token, boolean isReissueRequest) {
