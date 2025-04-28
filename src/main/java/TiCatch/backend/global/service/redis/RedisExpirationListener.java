@@ -33,14 +33,16 @@ public class RedisExpirationListener implements MessageListener {
         Long expiredTicketingId = Long.valueOf(expiredMessageKey.split(":")[1]);
         Ticketing ticketing = ticketingRepository.findById(expiredTicketingId).orElseThrow(NotExistTicketException::new);
 
-        if(ticketingStatus.equals(TicketingStatus.IN_PROGRESS)) {
-            ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
-            dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
-        } else {
-            ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
-            log.info("ticketingId : {} 티켓팅 시간이 만료됐습니다.",ticketing.getTicketingId());
-            dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
-            redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
+        if(!ticketing.getTicketingStatus().equals(TicketingStatus.CANCELED)) {
+            if(ticketingStatus.equals(TicketingStatus.IN_PROGRESS)) {
+                ticketing.changeTicketingStatus(TicketingStatus.IN_PROGRESS);
+                dynamicScheduler.startTicketingScheduler(ticketing.getTicketingId(),ticketing.getTicketingLevel());
+            } else {
+                ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
+                log.info("ticketingId : {} 티켓팅 시간이 만료됐습니다.",ticketing.getTicketingId());
+                dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
+                redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
+            }
         }
     }
 }
