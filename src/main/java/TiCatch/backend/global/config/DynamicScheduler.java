@@ -10,10 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +26,7 @@ public class DynamicScheduler {
     private final TicketingSeatService ticketingSeatService;
 
     private final ConcurrentHashMap<Long, ScheduledExecutorService> schedulerMap = new ConcurrentHashMap<>();
+    private final Map<Long, ScheduledFuture<?>> inProgressSchedulerMap = new ConcurrentHashMap<>();
 
     private static final Map<String, Integer> SEAT_WEIGHTS;
 
@@ -62,10 +60,10 @@ public class DynamicScheduler {
     }
 
     public void stopNowScheduler(Long ticketingId) {
-        ScheduledExecutorService scheduler = schedulerMap.get(ticketingId);
-        if (scheduler != null) {
-            scheduler.shutdownNow();
-            schedulerMap.remove(ticketingId);
+        ScheduledFuture<?> scheduledFuture = inProgressSchedulerMap.get(ticketingId);
+        if(scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+            inProgressSchedulerMap.remove(ticketingId);
         }
     }
 
@@ -89,12 +87,13 @@ public class DynamicScheduler {
 
         int ticketCount = getTicketCountByLevel(level);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> {
+        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
             ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
                     () -> stopNowScheduler(ticketingId));
         }, 0, 1, TimeUnit.SECONDS);
 
         schedulerMap.put(ticketingId, scheduler);
+        inProgressSchedulerMap.put(ticketingId, scheduledFuture);
         log.info("티켓팅 스케줄러 시작: 티켓팅 ID={}, Level={}, 초당 {}개 예약", ticketingId, level, ticketCount);
     }
 
