@@ -40,9 +40,9 @@ public class DynamicScheduler {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, BATCH_SIZE);
-                if (targetCount == 0L) {
-                    stopScheduler(ticketingId);
-                }
+//                if (targetCount == 0L) {
+//                    stopScheduler(ticketingId);
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
