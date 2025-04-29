@@ -24,6 +24,7 @@ public class RedisExpirationListener implements MessageListener {
     private final DynamicScheduler dynamicScheduler;
     private final TicketingRepository ticketingRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final RedisService redisService;
 
     @Override
     @Transactional
@@ -41,6 +42,7 @@ public class RedisExpirationListener implements MessageListener {
                 ticketing.changeTicketingStatus(TicketingStatus.COMPLETED);
                 log.info("ticketingId : {} 티켓팅 시간이 만료됐습니다.",ticketing.getTicketingId());
                 dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
+                redisService.deleteWaitingQueue(ticketing.getTicketingId());
                 redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
             }
         }

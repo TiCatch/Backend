@@ -147,10 +147,6 @@ public class TicketingService {
 
     public TicketingWaitingResponseDto getTicketingWaitingStatus(Long ticketingId, Long userId) {
         Long rank = redisService.getWaitingQueueRank(ticketingId, userId.toString());
-        if(rank == -1L) {
-            dynamicScheduler.stopScheduler(ticketingId);
-            redisService.deleteWaitingQueue(ticketingId);
-        }
         return TicketingWaitingResponseDto.of(ticketingId, userId, rank);
     }
 
@@ -207,7 +203,8 @@ public class TicketingService {
         }
         log.info("ticketingId : {} 티켓팅을 취소했습니다. ",ticketingId);
         ticketing.changeTicketingStatus(TicketingStatus.CANCELED);
-        dynamicScheduler.stopNowScheduler(ticketing.getTicketingId());
+        dynamicScheduler.stopNowScheduler(ticketingId);
+        redisService.deleteWaitingQueue(ticketingId);
         redisTemplate.delete(TICKETING_SEAT_PREFIX + ticketing.getTicketingId());
         return TicketingResponseDto.of(ticketing);
     }
