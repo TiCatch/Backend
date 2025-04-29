@@ -61,9 +61,14 @@ public class DynamicScheduler {
 
     public void stopNowScheduler(Long ticketingId) {
         ScheduledFuture<?> scheduledFuture = inProgressSchedulerMap.get(ticketingId);
+        ScheduledExecutorService scheduledExecutorService = schedulerMap.get(ticketingId);
         if(scheduledFuture != null) {
             scheduledFuture.cancel(true);
             inProgressSchedulerMap.remove(ticketingId);
+        }
+        if(scheduledExecutorService != null) {
+            scheduledExecutorService.shutdown();
+            schedulerMap.remove(ticketingId);
         }
     }
 
