@@ -27,6 +27,7 @@ public class DynamicScheduler {
 
     private final ConcurrentHashMap<Long, ScheduledExecutorService> schedulerMap = new ConcurrentHashMap<>();
     private final Map<Long, ScheduledFuture<?>> inProgressSchedulerMap = new ConcurrentHashMap<>();
+    private final Map<Long, ScheduledExecutorService> batchScheduleMap = new ConcurrentHashMap<>();
 
     private static final Map<String, Integer> SEAT_WEIGHTS;
 
@@ -36,7 +37,7 @@ public class DynamicScheduler {
     }
 
     public void startScheduler(Long ticketingId) {
-        if(schedulerMap.containsKey(ticketingId)) {
+        if(batchScheduleMap.containsKey(ticketingId)) {
             return;
         }
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -49,7 +50,7 @@ public class DynamicScheduler {
             }
         }, DYNAMIC_SCHEDULER_INITIAL_DELAY, DYNAMIC_SCHEDULER_PERIOD, TimeUnit.SECONDS);
 
-        schedulerMap.put(ticketingId, scheduler);
+        batchScheduleMap.put(ticketingId, scheduler);
     }
 
     public void stopScheduler(Long ticketingId) {
@@ -60,9 +61,10 @@ public class DynamicScheduler {
         }
     }
 
-    public void stopNowScheduler(Long ticketingId) {
+    public void stopTicketingScheduler(Long ticketingId) {
         ScheduledFuture<?> scheduledFuture = inProgressSchedulerMap.get(ticketingId);
         ScheduledExecutorService scheduledExecutorService = schedulerMap.get(ticketingId);
+        ScheduledExecutorService batchScheduledExecutorService = batchScheduleMap.get(ticketingId);
         if(scheduledFuture != null) {
             scheduledFuture.cancel(true);
             inProgressSchedulerMap.remove(ticketingId);
@@ -70,6 +72,10 @@ public class DynamicScheduler {
         if(scheduledExecutorService != null) {
             scheduledExecutorService.shutdown();
             schedulerMap.remove(ticketingId);
+        }
+        if(batchScheduledExecutorService != null) {
+            batchScheduledExecutorService.shutdown();
+            batchScheduleMap.remove(ticketingId);
         }
     }
 
@@ -92,14 +98,14 @@ public class DynamicScheduler {
         }
 
         int ticketCount = getTicketCountByLevel(level);
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
-            ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
-                    () -> stopNowScheduler(ticketingId));
-        }, 0, 1, TimeUnit.SECONDS);
-
-        schedulerMap.put(ticketingId, scheduler);
-        inProgressSchedulerMap.put(ticketingId, scheduledFuture);
+//        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+//        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
+//            ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
+//                    () -> stopTicketingScheduler(ticketingId));
+//        }, 0, 1, TimeUnit.SECONDS);
+//
+//        schedulerMap.put(ticketingId, scheduler);
+//        inProgressSchedulerMap.put(ticketingId, scheduledFuture);
         log.info("티켓팅 스케줄러 시작: 티켓팅 ID={}, Level={}, 초당 {}개 예약", ticketingId, level, ticketCount);
     }
 
