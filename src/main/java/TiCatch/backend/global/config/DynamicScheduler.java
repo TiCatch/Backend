@@ -36,13 +36,13 @@ public class DynamicScheduler {
     }
 
     public void startScheduler(Long ticketingId) {
+        if(schedulerMap.containsKey(ticketingId)) {
+            return;
+        }
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, BATCH_SIZE);
-//                if (targetCount == 0L) {
-//                    stopScheduler(ticketingId);
-//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
