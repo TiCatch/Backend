@@ -43,6 +43,7 @@ public class DynamicScheduler {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, BATCH_SIZE);
+                log.info("대기열 제거 인원 : " + targetCount);
             } catch (Exception e) {
                 e.printStackTrace();
             }
