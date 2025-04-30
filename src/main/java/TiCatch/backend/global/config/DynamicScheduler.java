@@ -27,7 +27,7 @@ public class DynamicScheduler {
 
     private final ConcurrentHashMap<Long, ScheduledExecutorService> schedulerMap = new ConcurrentHashMap<>();
     private final Map<Long, ScheduledFuture<?>> inProgressSchedulerMap = new ConcurrentHashMap<>();
-    private final Map<Long, ScheduledExecutorService> batchScheduleMap = new ConcurrentHashMap<>();
+    private final Map<Long, ScheduledFuture<?>> batchScheduleMap = new ConcurrentHashMap<>();
 
     private static final Map<String, Integer> SEAT_WEIGHTS;
 
@@ -41,7 +41,7 @@ public class DynamicScheduler {
             return;
         }
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> {
+        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
             try {
                 Long targetCount = ticketingBatchProcessService.processBatchInWaitingQueue(ticketingId, BATCH_SIZE);
                 log.info("대기열 제거 인원 : " + targetCount);
@@ -50,7 +50,7 @@ public class DynamicScheduler {
             }
         }, DYNAMIC_SCHEDULER_INITIAL_DELAY, DYNAMIC_SCHEDULER_PERIOD, TimeUnit.SECONDS);
 
-        batchScheduleMap.put(ticketingId, scheduler);
+        batchScheduleMap.put(ticketingId, scheduledFuture);
     }
 
     public void stopScheduler(Long ticketingId) {
@@ -64,7 +64,7 @@ public class DynamicScheduler {
     public void stopTicketingScheduler(Long ticketingId) {
         ScheduledFuture<?> scheduledFuture = inProgressSchedulerMap.get(ticketingId);
         ScheduledExecutorService scheduledExecutorService = schedulerMap.get(ticketingId);
-        ScheduledExecutorService batchScheduledExecutorService = batchScheduleMap.get(ticketingId);
+        ScheduledFuture<?> batchScheduledExecutorService = batchScheduleMap.get(ticketingId);
         if(scheduledFuture != null) {
             scheduledFuture.cancel(true);
             inProgressSchedulerMap.remove(ticketingId);
@@ -74,7 +74,7 @@ public class DynamicScheduler {
             schedulerMap.remove(ticketingId);
         }
         if(batchScheduledExecutorService != null) {
-            batchScheduledExecutorService.shutdown();
+            batchScheduledExecutorService.cancel(true);
             batchScheduleMap.remove(ticketingId);
         }
     }
