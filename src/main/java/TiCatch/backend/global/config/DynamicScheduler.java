@@ -98,14 +98,14 @@ public class DynamicScheduler {
         }
 
         int ticketCount = getTicketCountByLevel(level);
-//        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-//        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
-//            ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
-//                    () -> stopTicketingScheduler(ticketingId));
-//        }, 0, 1, TimeUnit.SECONDS);
-//
-//        schedulerMap.put(ticketingId, scheduler);
-//        inProgressSchedulerMap.put(ticketingId, scheduledFuture);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        ScheduledFuture<?> scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
+            ticketingSeatService.processSeatReservation(ticketingId, ticketCount, SEAT_WEIGHTS,
+                    () -> stopTicketingScheduler(ticketingId));
+        }, 0, 1, TimeUnit.SECONDS);
+
+        schedulerMap.put(ticketingId, scheduler);
+        inProgressSchedulerMap.put(ticketingId, scheduledFuture);
         log.info("티켓팅 스케줄러 시작: 티켓팅 ID={}, Level={}, 초당 {}개 예약", ticketingId, level, ticketCount);
     }
 
