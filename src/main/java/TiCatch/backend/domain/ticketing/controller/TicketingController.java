@@ -56,6 +56,7 @@ public class TicketingController {
         return ResponseEntity.ok(new SingleResponseResult<>(ticketingService.cancelTicket(ticketingId, user)));
     }
 
+    // 티켓팅 대기열 진입
     @GetMapping("/waiting/{ticketingId}/{userType}")
     public ResponseEntity<SingleResponseResult<TicketingWaitingResponseDto>> startTicketing(HttpServletRequest request, @Parameter(description = "티켓팅 ID") @PathVariable("ticketingId") Long ticketingId, @Parameter(description = "유저 유형 (ACTUAL 또는 VIRTUAL)") @PathVariable("userType") String userType) {
         String userId;
