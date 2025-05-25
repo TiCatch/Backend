@@ -27,8 +27,10 @@ public class RedisService {
 
 	public void addToWaitingQueue(Long ticketId, String userId) {
 		String queueKey = WAITING_QUEUE_PREFIX + ticketId;
-		redisTemplate.opsForZSet().remove(queueKey, userId);	// 이미 대기열에 유저가 있으면 삭제
-		log.info("중복 userId 대기열 삭제 처리");
+		Long removeCount = redisTemplate.opsForZSet().remove(queueKey, userId);// 이미 대기열에 유저가 있으면 삭제
+		if(removeCount != null && removeCount == 1L) {
+			log.info("중복 userId 대기열 삭제 처리");
+		}
 		double score = System.currentTimeMillis();
 		redisTemplate.opsForZSet().add(queueKey, userId, score);
 	}
