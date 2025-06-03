@@ -112,9 +112,9 @@ public class DynamicScheduler {
     // 게임 난이도별 초당 예약 개수
     private int getTicketCountByLevel(TicketingLevel level) {
         return switch (level) {
-            case EASY -> 2;
-            case NORMAL -> 5;
-            case HARD -> 10;
+            case EASY -> 20;
+            case NORMAL -> 50;
+            case HARD -> 100;
         };
     }
 }
