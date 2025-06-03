@@ -57,11 +57,11 @@ public class TicketingSeatService {
             if (count >= maxCount) break;
             if (seatStatusMap.get(seat).equals("0")) {
                 redisTemplate.opsForHash().put(redisKey, seat, "1");
-                log.info("@@@ 티켓팅 ID = {} 좌석 예약 완료: Seat={}", ticketingId, seat);
+//                log.info("@@@ 티켓팅 ID = {} 좌석 예약 완료: Seat={}", ticketingId, seat);
                 count++;
             }
         }
 
-        log.info("1초에 {}개의 좌석 예약 완료.", count);
+//        log.info("1초에 {}개의 좌석 예약 완료.", count);
     }
 }

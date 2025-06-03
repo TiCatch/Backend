@@ -34,11 +34,9 @@ public class MakeSeatWeight {
                 redisTemplate.opsForHash().put(SEAT_SCORE_FILE_NAME, seatKey, String.valueOf(weight));
             }
 
-            System.out.println("Redis에 좌석 가중치 저장 완료!");
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Redis에 좌석별 가중치 저장 실패!");
         }
     }
 }
