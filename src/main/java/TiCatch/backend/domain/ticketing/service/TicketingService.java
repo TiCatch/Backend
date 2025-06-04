@@ -147,6 +147,8 @@ public class TicketingService {
 
     public TicketingWaitingResponseDto getTicketingWaitingStatus(Long ticketingId, Long userId) {
         Long rank = redisService.getWaitingQueueRank(ticketingId, userId.toString());
+        Ticketing ticketing = ticketingRepository.findById(ticketingId).orElseThrow(NotExistTicketException::new);
+        validateTicketing(ticketing, userId);
         return TicketingWaitingResponseDto.of(ticketingId, userId, rank);
     }
 
