@@ -35,6 +35,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
 import static TiCatch.backend.global.constant.TicketingConstants.*;
@@ -79,6 +80,10 @@ public class TicketingService {
 
     @Transactional
     public Mono<TicketingResponseDto> createTicket(CreateTicketingDto createTicketingDto, User user) {
+        ticketingRepository.findByUserAndTicketingStatusIn(user, List.of(TicketingStatus.IN_PROGRESS, TicketingStatus.WAITING))
+                .ifPresent(t -> { throw new DuplicatedTicketException(); });
+
+
         Ticketing newTicketing = ticketingRepository.save(
                 Ticketing.fromDtoToEntity(createTicketingDto, user, TicketingStatus.WAITING)
         );

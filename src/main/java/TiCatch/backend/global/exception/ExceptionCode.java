@@ -18,6 +18,7 @@ public enum ExceptionCode {
 	NOT_EXIST_TICKET_EXCEPTION(441, "티켓팅이 존재하지 않습니다."),
 	NOT_IN_PROGRESS_TICKET_EXCEPTION(442, "진행 중인 티켓팅이 아닙니다."),
 	NOT_EXIST_IN_PROGRESS_TICKET_EXCEPTION(443, "진행 중인 티켓팅이 없습니다."),
+	DUPLICATED_TICKET_EXCEPTION(444, "티켓팅을 중복해서 생성할 수 없습니다."),
 
 	// RESERVATION
 	ALREADY_RESERVED_EXCEPTION(450, "이미 선점된 좌석입니다."),

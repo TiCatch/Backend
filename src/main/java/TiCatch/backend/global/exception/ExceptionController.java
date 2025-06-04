@@ -91,4 +91,9 @@ public class ExceptionController {
     public ResponseResult NotExistInProgressTicketException(NotExistInProgressTicketException err) {
         return ResponseResult.exceptionResponse(ExceptionCode.NOT_EXIST_IN_PROGRESS_TICKET_EXCEPTION, err.getMessage());
     }
+
+    @ExceptionHandler(DuplicatedTicketException.class)
+    public ResponseResult DuplicatedTicketException(DuplicatedTicketException err) {
+        return ResponseResult.exceptionResponse(ExceptionCode.DUPLICATED_TICKET_EXCEPTION, err.getMessage());
+    }
 }
