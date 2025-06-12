@@ -88,6 +88,13 @@ public class TicketingController {
                 .map(seats -> ResponseEntity.ok(new SingleResponseResult<>(seats)));
     }
 
+    // 구역별 잔여석 조회
+    @GetMapping("/seats/{ticketingId}/unreserved")
+    public Mono<ResponseEntity<SingleResponseResult<Map<String, Long>>>> checkUnreservedSeat(@PathVariable("ticketingId") Long ticketingId) {
+        return ticketingService.getSeatCountBySection(ticketingId)
+                .map(sectionCounts -> ResponseEntity.ok(new SingleResponseResult<>(sectionCounts)));
+    }
+
     // 좌석 예약 가능 여부 확인
     @GetMapping("/seats/{ticketingId}/check/{seatKey}")
     public ResponseEntity<SingleResponseResult<String>> checkSeatAvailability(@PathVariable("ticketingId") Long ticketingId, @PathVariable("seatKey") String seatKey) {

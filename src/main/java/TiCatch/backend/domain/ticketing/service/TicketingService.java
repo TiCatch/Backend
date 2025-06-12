@@ -32,10 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static TiCatch.backend.domain.ticketing.entity.TicketingLevel.*;
 import static TiCatch.backend.global.constant.TicketingConstants.*;
@@ -190,6 +190,30 @@ public class TicketingService {
                         entry -> entry.getKey().toString(),
                         entry -> "1".equals(entry.getValue()) // 1이면 true, 0이면 false로 변환
                 );
+    }
+
+    public Mono<Map<String, Long>> getSeatCountBySection(Long ticketingId) {
+        String redisKey = TICKETING_SEAT_PREFIX + ticketingId;
+
+        return reactiveRedisTemplate.<String, String>opsForHash().entries(redisKey)
+                .collectList()
+                .flatMap(entries -> {
+                    Set<String> allSections = entries.stream()
+                            .map(entry -> entry.getKey().split(":")[0])
+                            .collect(Collectors.toSet());
+
+                    Map<String, Long> availableCounts = entries.stream()
+                            .filter(entry -> "0".equals(entry.getValue()))
+                            .map(entry -> entry.getKey().split(":")[0])
+                            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+                    Map<String, Long> result = new HashMap<>();
+                    for (String section : allSections) {
+                        result.put(section, availableCounts.getOrDefault(section, 0L));
+                    }
+
+                    return Mono.just(result);
+                });
     }
 
     public void isAvailable(Long ticketingId, String seatKey) {
