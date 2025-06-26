@@ -56,6 +56,40 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
     }
 
     @Override
+    public Page<TicketingHistoryPagingResponse> findHistoryByUserIdAndLevelWithPaged(Long userId, Pageable pageable, TicketingLevel ticketingLevel) {
+        List<TicketingHistoryPagingResponse> fetchResult = jpaQueryFactory.select(Projections.fields(TicketingHistoryPagingResponse.class,
+                        history.historyId.as("historyId"),
+                        history.user.userId.as("userId"),
+                        history.ticketingId.as("ticketingId"),
+                        history.seatInfo.as("seatInfo"),
+                        history.ticketingScore.as("ticketingScore"),
+                        history.ticketingLevel.as("ticketingLevel"),
+                        history.ticketingTime.as("ticketingTime")))
+                .from(history)
+                .where(
+                        userIdEq(userId),
+                        levelEq(ticketingLevel)
+                )
+                .orderBy(history.ticketingTime.desc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+
+        Long total = Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(history.count())
+                                .from(history)
+                                .where(
+                                        userIdEq(userId),
+                                        levelEq(ticketingLevel)
+                                )
+                                .fetchOne())
+                .orElse(0L);
+
+        return PageableExecutionUtils.getPage(fetchResult, pageable, () -> total);
+    }
+
+    @Override
     public LevelHistoryResponse findHistoryByUserIdWithLevelCounts(Long userId) {
         List<Tuple> result = jpaQueryFactory.select(history.ticketingLevel, history.count())
                 .from(history)
@@ -84,6 +118,10 @@ public class HistoryCustomRepositoryImpl implements HistoryCustomRepository {
 
     private BooleanExpression userIdEq(Long userId) {
         return isNullOrEmpty(String.valueOf(userId)) ? null : history.user.userId.eq(userId);
+    }
+
+    private BooleanExpression levelEq(TicketingLevel ticketingLevel) {
+        return ticketingLevel != null ? history.ticketingLevel.eq(ticketingLevel) : null;
     }
 
     private OrderSpecifier<?> getOrderSpecifier(Pageable pageable) {
